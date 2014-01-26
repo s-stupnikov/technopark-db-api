@@ -50,21 +50,30 @@ class Request(object):
 
 
 class Database(object):
+    conn = None
     def __init__(self, config):
-        db = MySQLdb.connect(host=config['host'], user=config['user'], passwd=config['password'], db=config['database'], charset='utf8')
-        self.cursor = db.cursor()
+        self.config = config
 
-    def dictfetchall(self):
+    def connect(self):
+        self.conn = MySQLdb.connect(host=self.config['host'], user=self.config['user'], passwd=self.config['password'], db=self.config['database'], charset='utf8')
+
+    def dictfetchall(self, cursor):
         "Returns all rows from a cursor as a dict"
-        desc = self.cursor.description
+        desc = cursor.description
         return [
             dict(zip([col[0] for col in desc], row))
-            for row in self.cursor.fetchall()
+            for row in cursor.fetchall()
         ]
 
     def query(self, sql):
-        self.cursor.execute(sql)
-        return self.dictfetchall()
+        try:
+            self.conn.ping()
+        except:
+            self.connect()
+        finally:
+            cursor = self.conn.cursor()
+            cursor.execute(sql)
+        return self.dictfetchall(cursor)
 
 def test():
     test_conf = Configuration('/usr/local/etc/test.conf')
