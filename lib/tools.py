@@ -24,11 +24,14 @@ class Request(object):
             raise TypeError('Request.query_args must be dict')
         self.query_args = query_args
         self.post = post
-        self.request = urllib2.Request(self.url)
+        self.request = urllib2.Request(self.url, headers={'Content-Type': 'application/json'})
         self._add_params()
 
     def get_response(self):
-        handler = urllib2.urlopen(self.request)
+        try:
+            handler = urllib2.urlopen(self.request)
+        except Exception, e:
+            raise ValueError('HTTP error: %s' % str(e))
         if handler.getcode() >= 300:
             raise ValueError('Request %s return code not 2xx' % self.request)
         response = handler.read()
@@ -46,7 +49,7 @@ class Request(object):
             self.url = urlparse.urlunparse(url_parts)
             self.request = urllib2.Request(self.url)
         else:
-            self.request.add_data(urllib.urlencode(self.query_args))
+            self.request.add_data(json.dumps(self.query_args))
 
 
 class Database(object):
@@ -80,7 +83,7 @@ def test():
     assert test_conf.get_section('testing_section')['foo'] == 'bar'
     db = Database(test_conf.get_section('testing_db'))
     assert db.query('select * from engines limit 1')[0]['ENGINE'] == 'MyISAM'
-    test_response = Request('http://127.0.0.1:5000/db/api/v0.1/testing_location/?one=two', query_args={'foo': 'bar'}).get_response()
+    test_response = Request('http://127.0.0.1:5000/db/api/1/testing_location/?one=two', query_args={'foo': 'bar'}).get_response()
     assert test_response['foo'][0] == 'bar'
     assert test_response['one'][0] == 'two'
     print 'TESTS: OK'
