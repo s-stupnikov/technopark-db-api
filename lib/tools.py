@@ -6,6 +6,7 @@ import unittest
 import ConfigParser
 
 import MySQLdb
+from pymongo import MongoClient
 
 class Configuration(object):
     def __init__(self, config_path):
@@ -36,9 +37,19 @@ class Request(object):
             raise ValueError('Request %s return code not 2xx' % self.request)
         response = handler.read()
         try:
-            return json.loads(response)
+            response = json.loads(response)
         except:
-            return response
+            raise ValueError('Not json response')
+        if not response:
+            raise ValueError('Empty response')
+        # if 'response' not in response or 'code' not in response:
+        #     raise ValueError('Bad response body: response or code attribute is missing')
+        # if response['code'] != 0:
+        #     raise ValueError('Bad response code: %s' % str(response['code']))
+        if 'response' in response:
+            return response['response']
+        return response
+
 
     def _add_params(self):
         if not self.post:
@@ -50,6 +61,24 @@ class Request(object):
             self.request = urllib2.Request(self.url)
         else:
             self.request.add_data(json.dumps(self.query_args))
+
+
+class mongodb(object):
+    def __init__(self, collection):
+        client = MongoClient()
+        db = client['database_course']
+        self.collection = db[collection]
+
+    def save(self, data):
+        self.collection.save(data)
+    def insert(self, data):
+        self.collection.insert(data)
+    def find(self, query, limit_to=0):
+        return self.collection.find(query, {'quries': False}).limit(limit_to)
+    def find_one(self, query):
+        return self.collection.find_one(query)
+    def update(self, where, fields):
+        self.collection.update(where, {"$set": fields})
 
 
 class Database(object):

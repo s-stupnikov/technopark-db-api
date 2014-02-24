@@ -275,8 +275,111 @@ TEST_THREADS = {
             'limit': 3,
         },
     ],
+    'listPosts': [
+        {
+            'since': '2014-01-02 00:00:00',
+            'limit': 2,
+            'order': 'asc',
+        },
+        {
+            'since': '2014-01-01 00:00:00',
+            'order': 'desc',
+        },
+        {
+            'since': '2014-01-01 00:00:00',
+            'order': 'desc',
+        },
+        {
+            'since': '2014-01-03 00:00:00',
+            'order': 'desc',
+            'limit': 3,
+        },
+    ],
     'votes': 1,
     'subscriptions': len(USERS),
     'unsubscriptions': 1,
 
+}
+
+TEST_USERS = {
+    'listPosts': [
+        {
+            "user":"example@mail.ru",
+            'since': '2014-01-02 00:00:00',
+            'limit': 2,
+            'order': 'asc',
+        },
+        {
+            "user":"example1@mail.ru",
+            'since': '2014-01-01 00:00:00',
+            'order': 'desc',
+        },
+        {
+            "user":"example2@mail.ru",
+            'since': '2014-01-01 00:00:00',
+            'order': 'asc',
+        },
+        {
+            "user":"example3@mail.ru",
+            'since': '2014-01-03 00:00:00',
+            'order': 'desc',
+            'limit': 3,
+        },
+    ],
+    'updateProfile': [
+        {
+            "user":"example2@mail.ru",
+            'name': 'NewName',
+            'about': 'Wowowowow',
+        },
+        {
+            "user":"example3@mail.ru",
+            'name': 'NewName2',
+            'about': 'Wowowowow!!!',
+        },
+    ],
+    'follow': [
+        {
+            'follower': 'example3@mail.ru',
+            'followee': 'example@mail.ru'
+        },
+        {
+            'followee': 'example3@mail.ru',
+            'follower': 'example@mail.ru'
+        },
+    ],
+    'unfollow': [
+        {
+            'follower': 'example3@mail.ru',
+            'followee': 'example@mail.ru'
+        },
+        {
+            'followee': 'example3@mail.ru',
+            'follower': 'example@mail.ru'
+        },
+    ],
+    'listFollowing': [
+        {
+            "user":"example3@mail.ru",
+            'since_id': 1,
+            'order': 'desc',
+            'limit': 3,
+        },
+        {
+            "user":"example@mail.ru",
+            'order': 'asc',
+        },
+    ],
+    'listFollowers': [
+         {
+            "user":"example3@mail.ru",
+            'since_id': 2,
+            'order': 'desc',
+            'limit': 3,
+        },
+        {
+            "user":"example@mail.ru",
+            'order': 'asc',
+        },   
+    ]
 }

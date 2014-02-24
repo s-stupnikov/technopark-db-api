@@ -3,6 +3,7 @@ import os
 import sys
 import copy
 import json
+import time
 import pprint
 import random
 import urlparse
@@ -14,6 +15,17 @@ import tools
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
 settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
+
+class TestLog(object):
+    def __init__(self):
+        self.test_log = []
+
+    def write(self, message, level='info'):
+        time = datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S] ')
+        msg = time + message
+        self.test_log.append({'message': message, 'level': level})
+
+log = TestLog()
 
 class TestError(object):
     message_for_code = {
@@ -40,17 +52,17 @@ class Actor(object):
 
     def query_api(self, url_suffix, query_dict, post=False):
         url = self.url_prefix + '/' + url_suffix + '/'
+        method = 'POST' if post else 'GET'
+        log.write('Requesting %s with %s (%s)' % (url, str(query_dict), method))
         try:
+            start = time.time()
             response = tools.Request(url, query_dict, post).get_response()
+            req_time = time.time() - start
+            log.write('Request time was: %.4f sec' % req_time)
         except ValueError, e:
-            err = TestError(1)
-            err.info = {
-                'url': url,
-                'query_params': query_dict, 
-                'response': str(e)
-            }
-            err.save_and_exit()
-
+            log.write('Request error: %s' % str(e), level='error')
+            log.write('Exiting', level='error')
+            raise ValueError
         return response
 
     def _create_from_dict(self, response, new_type=None):
@@ -67,7 +79,12 @@ class Actor(object):
         else:
             cls = cls_for_location[new_type]
 
-        return cls(**response)
+        try:
+            obj = cls(**response)
+        except Exception, e:
+            log.write('Cannot create <%s> object from response. Response: %s' % (cls.__name__, str(response)), level='error')
+            raise ValueError
+        return obj
 
     def _trigger_side_effects(self, test_obj):
         TestScenario.add(test_obj)
@@ -103,31 +120,27 @@ class Actor(object):
         return obj
 
     def validate_single(self, test_obj, related=None):
+        log.write('Validating by requesting object details')
         if related is None:
             related = []
         api_obj = self.details(obj=test_obj, related=related)
         if test_obj != api_obj:
-            print 'single: ', False
-            return False
-        print 'single: ', True
+            raise ValueError
+            # return False
         return True
 
     def validate_list(self, test_obj_list, api_obj_list):
-        # print 'GOT: api=', api_obj_list, 'test=', test_obj_list
+        log.write('Validating by requesting list of objects')
         if len(api_obj_list) == len(test_obj_list):
             for test_obj, api_obj in zip(test_obj_list, api_obj_list):
                 if test_obj != api_obj:
-                    # print test_obj
-                    # print api_obj
-                    print 'Objs dont match.list: ', False
-                    return False
+                    raise ValueError
+                    # return False
         else:
-            print api_obj_list, test_obj_list
-            print 'Len dont match.list: ', False
-            return False
-        print 'list: ', True
+            log.write('len(api objects list) != len(test object list): %d != %d' % (len(api_obj_list), len(test_obj_list)), level='error')
+            raise ValueError
+            # return False
         return True
-
 
 
 class ForumActor(Actor):
@@ -137,7 +150,7 @@ class ForumActor(Actor):
 
     def list_type(self, obj_type, query_dict, validate_against):
         url_suffix = 'list' + obj_type.capitalize() + 's'
-        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)['response']
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
         api_obj_list = [self._create_from_dict(obj_dict, new_type=obj_type) for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
@@ -149,8 +162,14 @@ class ThreadActor(Actor):
 
     def list(self, query_dict, validate_against):
         url_suffix = 'list'
-        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)['response']
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
         api_obj_list = [self._create_from_dict(obj_dict) for obj_dict in response]
+        return self.validate_list(validate_against, api_obj_list)
+
+    def list_posts(self, query_dict, validate_against):
+        url_suffix = 'listPosts'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
+        api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
     def open(self, query_dict, thread):
@@ -217,7 +236,7 @@ class PostActor(Actor):
 
     def list(self, query_dict, validate_against):
         url_suffix = 'list'
-        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)['response']
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
         api_obj_list = [self._create_from_dict(obj_dict) for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
@@ -253,6 +272,52 @@ class UserActor(Actor):
         super(UserActor, self).__init__(student_name)
         self.url_prefix = self.url_prefix + '/user'
 
+    def update_profile(self, query_dict, user):
+        user.name = query_dict['name']
+        user.about = query_dict['about']
+        url_suffix = 'updateProfile'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
+        return self.validate_single(user)
+
+    def list_posts(self, query_dict, validate_against):
+        url_suffix = 'listPosts'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
+        api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
+        return self.validate_list(validate_against, api_obj_list)
+
+    def list_followers(self, query_dict, validate_against):
+        url_suffix = 'listFollowers'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
+        api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
+        return self.validate_list(validate_against, api_obj_list)
+
+    def list_following(self, query_dict, validate_against):
+        url_suffix = 'listFollowing'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
+        api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
+        return self.validate_list(validate_against, api_obj_list)
+
+    def follow(self, query_dict, follower, followee):
+        if followee.unique_id not in follower.following:
+            follower.following.append(followee.unique_id)
+        if follower.unique_id not in followee.followers:
+            followee.followers.append(follower.unique_id)
+        url_suffix = 'follow'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
+        r1 = self.validate_single(follower)
+        r2 = self.validate_single(followee)
+        return r1 and r2
+
+    def unfollow(self, query_dict, follower, followee):
+        if followee.unique_id in follower.following:
+            follower.following.remove(followee.unique_id)
+        if follower.unique_id in followee.followers:
+            followee.followers.remove(follower.unique_id)
+        url_suffix = 'unfollow'
+        response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
+        r1 = self.validate_single(follower)
+        r2 = self.validate_single(followee)
+        return r1 and r2
 
 class ForumEntity(object):
     def __init__(self, **kwargs):
@@ -292,7 +357,7 @@ class ForumEntity(object):
                 if attr in ao_dict:
                     if isinstance(ao_dict[attr], dict) or isinstance(to_dict[attr], dict):
                         if not isinstance(ao_dict[attr], dict):
-                            print 'No related supplied'
+                            log.write('No <%s> related in response from API: [%s]' % (attr, str(ao_dict)), level='error')
                             return -1
                         cls = cls_for_attr[attr]
                         related_ao = cls(**ao_dict[attr])
@@ -304,17 +369,18 @@ class ForumEntity(object):
                         if isinstance(to_dict[attr], (str, unicode, int)):
                             related_to = TestScenario.get_eq_obj(related_ao)
                         if related_to != related_ao:
-                            print 'Related %s do not match' % attr
-                            return -1
+                            log.write('Related <%s> from API response [%s] dont match test object [%s]' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
+                            raise ValueError
+                            # return -1
                     if to_dict[attr] != ao_dict[attr]:
-                        print '%s do not match: api=%s, test=%s' % (attr, str(ao_dict[attr]) , str(to_dict[attr]))
+                        log.write('Attribute <%s> from API response (value=%s) dont match test object (value=%s)' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
                         return -1
                 else:
-                    print 'Missing attr: %s' % attr
+                    log.write('Attribute <%s> missing in response from API: %s' % (attr, str(ao_dict.get(attr))), level='error')
                     return -1
             else:
                 return 0
-        print 'No api obj'
+        log.write('API object is empty', level='error')
         return -1
 
 class Forum(ForumEntity):
@@ -338,8 +404,8 @@ class Post(ForumEntity):
 
 class User(ForumEntity):
     def __init__(self, **kwargs):
-        self.isFollowing = False
-        self.isFollowedBy = False
+        self.followers = []
+        self.following = []
         self.subscriptions = []
         super(User, self).__init__(**kwargs)
 
@@ -452,11 +518,14 @@ class TestScenario(object):
         self.test_conf = constants.TEST_CONF
 
     def start(self):
+        log.write('Let there be users.')
         self.register_users()
+        log.write('Let there be content')
         self.create_content()
         self.test_forums()
         self.test_posts()
         self.test_threads()
+        self.test_users()
 
     def register_users(self):
         for u in self.test_conf['users']:
@@ -493,18 +562,22 @@ class TestScenario(object):
             if childs: self._setup_posts_tree(childs, parent=created_post.id, thread_id=p['thread'])
 
     def test_forums(self):
+        # print 'TEST FORUMS'
+        log.write('List forum posts')
         for params in constants.TEST_FORUMS['listPosts']:
             objects = copy.deepcopy(self.posts.values())
             elist = EntitiesList(objects, **params)
             if not self.forum_actor.list_type('post', params, elist.objects):
                 break
         
+        log.write('List forum threads')
         for params in constants.TEST_FORUMS['listThreads']:
             objects = copy.deepcopy(self.threads.values()) 
             elist = EntitiesList(objects, **params)
             if not self.forum_actor.list_type('thread', params, elist.objects):
                 break
         
+        log.write('List forum users')
         for params in constants.TEST_FORUMS['listUsers']:
             objects = []
             for p in self.posts.values():
@@ -518,45 +591,121 @@ class TestScenario(object):
             self.forum_actor.list_type('user', params, elist.objects)
 
     def test_posts(self):
+        # print 'TEST POSTS'
+        log.write('List posts')
         for params in constants.TEST_POSTS['list']:
             objects = copy.deepcopy(self.posts.values()) 
             elist = EntitiesList(objects, **params)
             self.post_actor.list(params, elist.objects)
         
         post = random.choice(self.posts.values())
+        log.write('Remove post')
         self.post_actor.remove({'post': post.id}, post)
+        log.write('Restore post')
         self.post_actor.restore({'post': post.id}, post)
+        log.write('Update post')
         self.post_actor.update({'post': post.id, 'message': post.message}, post)
+        log.write('Likes time!!!')
         for _ in range(constants.TEST_POSTS['votes']):
             post = random.choice(self.posts.values())
             vote = random.choice([1, -1])
             self.post_actor.vote({'post': post.id, 'vote': vote}, post)
 
     def test_threads(self):
+        # print 'TEST THREADS'
+        log.write('List some threads')
         for params in constants.TEST_THREADS['list']:
             objects = copy.deepcopy(self.threads.values()) 
             elist = EntitiesList(objects, **params)
             self.thread_actor.list(params, elist.objects)
-        
+        log.write('And list posts in them')
+        for params in constants.TEST_THREADS['listPosts']:
+            thread = random.choice(self.threads.values())
+            params['thread'] = thread.id
+            objects = copy.deepcopy([p for p in self.posts.values() if p.thread == thread.id]) 
+            elist = EntitiesList(objects, **params)
+            self.thread_actor.list_posts(params, elist.objects)        
+
         thread = random.choice(self.threads.values())
+        log.write('Go away thread!')
         self.thread_actor.remove({'thread': thread.id}, thread)
+        log.write('Alright, I forgive you, come back')
         self.thread_actor.restore({'thread': thread.id}, thread)
+        log.write('Changed my mind again, goodbye!')
         self.thread_actor.close({'thread': thread.id}, thread)
+        log.write('But I cant live without you')
         self.thread_actor.open({'thread': thread.id}, thread)
+        log.write('Update post')
         self.thread_actor.update({'thread': thread.id, 'message': thread.message, 'slug': 'newslug'}, thread)
+        log.write('Likes time...again!')
         for _ in range(constants.TEST_THREADS['votes']):
             thread = random.choice(self.threads.values())
             vote = random.choice([1, -1])
             self.thread_actor.vote({'thread': thread.id, 'vote': vote}, thread)
+        log.write('Subscribe me')
         for _ in range(constants.TEST_THREADS['subscriptions']):
             thread = random.choice(self.threads.values())
             user = random.choice(self.users.values())
             self.thread_actor.subscribe({'thread': thread.id, 'user': user.unique_id}, thread)
+        log.write('Unsubscribe me')
         for _ in range(constants.TEST_THREADS['unsubscriptions']):
             thread = random.choice(self.threads.values())
             user = random.choice(self.users.values())
             self.thread_actor.unsubscribe({'thread': thread.id, 'user': user.unique_id}, thread)
 
+    def test_users(self):
+        # print 'TEST USERS'
+        log.write('OMG, I was soooooo wasted...what did I wrote yesterday?')
+        for params in constants.TEST_USERS['listPosts']:
+            objects = copy.deepcopy([p for p in self.posts.values() if p.user == params['user']]) 
+            elist = EntitiesList(objects, **params)
+            self.user_actor.list_posts(params, elist.objects)
+        log.write('It was huge mistake. Need to change a nick quickly')
+        for params in constants.TEST_USERS['updateProfile']:
+            user = self.users[params['user']]
+            self.user_actor.update_profile(params, user)
+        log.write('Follow someone')
+        for params in constants.TEST_USERS['follow']:
+            follower = self.users[params['follower']]
+            followee = self.users[params['followee']]
+            self.user_actor.follow(params, follower, followee)
+        log.write('List followers')
+        for params in constants.TEST_USERS['listFollowers']:
+            user = self.users[params['user']]            
+            del params['user']     
+            objects = copy.deepcopy([self.users[u] for u in user.followers]) 
+            elist = EntitiesList(objects, **params)
+            params['user'] = user.email
+            self.user_actor.list_followers(params, elist.objects)
+        log.write('List following')
+        for params in constants.TEST_USERS['listFollowing']:
+            user = self.users[params['user']]       
+            del params['user']     
+            objects = copy.deepcopy([self.users[u] for u in user.following]) 
+            elist = EntitiesList(objects, **params)
+            params['user'] = user.email
+            self.user_actor.list_following(params, elist.objects)
+        log.write('Unfollow someone')
+        for params in constants.TEST_USERS['unfollow']:
+            follower = self.users[params['follower']]
+            followee = self.users[params['followee']]
+            self.user_actor.unfollow(params, follower, followee)
+
 if __name__ == '__main__':
-    pass
-    TestScenario(student_name='s.stupnikov').start()
+    passed = True
+    student_name='s.stupnikov'
+    start = datetime.datetime.now()
+    log.write('Testing started for: %s' % student_name)
+    try:
+        TestScenario(student_name=student_name).start()
+    except ValueError:
+        passed = False
+    
+    record = {
+        'log': log.test_log,
+        'student': student_name,
+        'start_time': start,
+        'passed': passed,
+    }
+    m = tools.mongodb(collection='functional_test')
+    m.insert(record)
