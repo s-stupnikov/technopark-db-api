@@ -9,10 +9,11 @@
 ##Arguments
 ###Optional
 
+
 ###Requried
 * thread
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/restore/ with _{'thread': 333}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/restore/ with _{'thread': 171}_:
 ```json
-{u'code': 0, u'response': {u'thread': 333}}
+{u'code': 0, u'response': {u'thread': 171}}
 ```

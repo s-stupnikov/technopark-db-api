@@ -9,10 +9,11 @@
 ##Arguments
 ###Optional
 
+
 ###Requried
 * post
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/restore/ with _{'post': 832}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/restore/ with _{'post': 184}_:
 ```json
-{u'code': 0, u'response': {u'post': 832}}
+{u'code': 0, u'response': {u'post': 184}}
 ```

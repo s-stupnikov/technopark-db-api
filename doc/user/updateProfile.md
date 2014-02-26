@@ -9,6 +9,7 @@
 ##Arguments
 ###Optional
 
+
 ###Requried
 * user
 * name
@@ -21,9 +22,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/updateProfile/ with _{'ab
                u'email': u'example2@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 14,
+               u'id': 183,
                u'isAnonymous': False,
                u'name': u'NewName',
-               u'subscriptions': [182],
+               u'subscriptions': [],
                u'username': u'user2'}}
 ```

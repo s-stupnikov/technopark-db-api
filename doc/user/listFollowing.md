@@ -9,6 +9,7 @@
 ##Arguments
 ###Optional
 * order
+
 ###Requried
 * user
 
@@ -19,9 +20,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/listFollowing/ with _{'li
                 u'email': u'example@mail.ru',
                 u'followers': [u'example3@mail.ru'],
                 u'following': [u'example3@mail.ru'],
-                u'id': 321,
+                u'id': 390,
                 u'isAnonymous': False,
                 u'name': u'John',
-                u'subscriptions': [182],
+                u'subscriptions': [],
                 u'username': u'user1'}]}
 ```
