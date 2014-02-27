@@ -10,13 +10,16 @@ Create new user
 ##Arguments
 ###Optional
 * isAnonymous
+
    ```bool``` is user marked as anonymous
 
 
 ###Requried
 * name
+
    ```str``` user name
 * email
+
    ```str``` user email
 
 
@@ -25,7 +28,7 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/create/ with _{'username'
 {u'code': 0,
  u'response': {u'about': u'hello im user1',
                u'email': u'example@mail.ru',
-               u'id': 588,
+               u'id': 368,
                u'isAnonymous': False,
                u'name': u'John',
                u'username': u'user1'}}

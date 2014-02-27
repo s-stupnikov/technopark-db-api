@@ -10,8 +10,10 @@ List threads
 ##Arguments
 ###Optional
 * since
+
    ```str``` include threads created since date. Format: 'YYYY-MM-DD hh-mm-ss'
 * order
+
    ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
 
 

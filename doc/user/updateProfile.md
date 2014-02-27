@@ -12,10 +12,13 @@ Update profile
 
 ###Requried
 * about
+
    ```str``` user info
 * user
+
    ```str``` user email
 * name
+
    ```str``` user name
 
 
@@ -26,9 +29,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/updateProfile/ with _{'ab
                u'email': u'example3@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 564,
+               u'id': 726,
                u'isAnonymous': False,
                u'name': u'NewName2',
-               u'subscriptions': [768],
+               u'subscriptions': [358],
                u'username': u'user3'}}
 ```

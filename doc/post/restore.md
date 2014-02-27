@@ -12,10 +12,11 @@ Cancel removal
 
 ###Requried
 * post
+
    ```int``` post id
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/restore/ with _{'post': 432}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/restore/ with _{'post': 162}_:
 ```json
-{u'code': 0, u'response': {u'post': 432}}
+{u'code': 0, u'response': {u'post': 162}}
 ```
