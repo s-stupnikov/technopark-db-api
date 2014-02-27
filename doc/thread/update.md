@@ -1,4 +1,5 @@
 #Thread.update
+Edit thread
 
 ## Supported request methods 
 * POST
@@ -7,28 +8,31 @@
 * json
 
 ##Arguments
-###Optional
 
 
 ###Requried
-* slug
 * message
+   ```str``` thread message
+* slug
+   ```str``` thread slug
 * thread
+   ```int``` thread id of this post
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/update/ with _{'message': 'hey hey hey hey!', 'slug': 'newslug', 'thread': 171}_:
+
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/update/ with _{'message': 'hey hey!', 'slug': 'newslug', 'thread': 397}_:
 ```json
 {u'code': 0,
- u'response': {u'date': u'2014-01-01 00:00:01',
+ u'response': {u'date': u'2013-12-30 00:01:01',
                u'dislikes': 0,
-               u'forum': u'forum1',
-               u'id': 171,
+               u'forum': u'forum2',
+               u'id': 397,
                u'isClosed': False,
                u'isDeleted': False,
                u'likes': 0,
-               u'message': u'hey hey hey hey!',
+               u'message': u'hey hey!',
                u'points': 0,
-               u'posts': 0,
+               u'posts': 1,
                u'slug': u'newslug',
-               u'title': u'Thread With Sufficiently Large Title',
-               u'user': u'example4@mail.ru'}}
+               u'title': u'Thread II',
+               u'user': u'example3@mail.ru'}}
 ```

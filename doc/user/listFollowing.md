@@ -1,4 +1,5 @@
 #User.listFollowing
+Get followees of this user
 
 ## Supported request methods 
 * GET
@@ -9,9 +10,13 @@
 ##Arguments
 ###Optional
 * order
+   ```str``` sort order (by name). Possible values: ```['desc', 'asc']```. Default: 'desc'
+
 
 ###Requried
 * user
+   ```str``` user email
+
 
 Requesting http://some.host.ru/db/api/s.stupnikov/user/listFollowing/ with _{'limit': 3, 'user': 'example3@mail.ru', 'since_id': 1, 'order': 'desc'}_:
 ```json
@@ -20,9 +25,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/listFollowing/ with _{'li
                 u'email': u'example@mail.ru',
                 u'followers': [u'example3@mail.ru'],
                 u'following': [u'example3@mail.ru'],
-                u'id': 390,
+                u'id': 588,
                 u'isAnonymous': False,
                 u'name': u'John',
-                u'subscriptions': [],
+                u'subscriptions': [768],
                 u'username': u'user1'}]}
 ```

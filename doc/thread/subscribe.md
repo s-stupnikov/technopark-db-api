@@ -1,4 +1,5 @@
 #Thread.subscribe
+Subscribe user to this thread
 
 ## Supported request methods 
 * POST
@@ -7,15 +8,16 @@
 * json
 
 ##Arguments
-###Optional
 
 
 ###Requried
 * user
+   ```str``` founder email
 * thread
+   ```int``` thread id of this post
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/subscribe/ with _{'user': 'richard.nixon@example.com', 'thread': 544}_:
+
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/subscribe/ with _{'user': 'example3@mail.ru', 'thread': 768}_:
 ```json
-{u'code': 0,
- u'response': {u'thread': 544, u'user': u'richard.nixon@example.com'}}
+{u'code': 0, u'response': {u'thread': 768, u'user': u'example3@mail.ru'}}
 ```

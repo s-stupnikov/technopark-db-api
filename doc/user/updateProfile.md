@@ -1,4 +1,5 @@
 #User.updateProfile
+Update profile
 
 ## Supported request methods 
 * POST
@@ -7,24 +8,27 @@
 * json
 
 ##Arguments
-###Optional
 
 
 ###Requried
-* user
-* name
 * about
+   ```str``` user info
+* user
+   ```str``` user email
+* name
+   ```str``` user name
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/updateProfile/ with _{'about': 'Wowowowow', 'user': 'example2@mail.ru', 'name': 'NewName'}_:
+
+Requesting http://some.host.ru/db/api/s.stupnikov/user/updateProfile/ with _{'about': 'Wowowowow!!!', 'user': 'example3@mail.ru', 'name': 'NewName2'}_:
 ```json
 {u'code': 0,
- u'response': {u'about': u'Wowowowow',
-               u'email': u'example2@mail.ru',
+ u'response': {u'about': u'Wowowowow!!!',
+               u'email': u'example3@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 183,
+               u'id': 564,
                u'isAnonymous': False,
-               u'name': u'NewName',
-               u'subscriptions': [],
-               u'username': u'user2'}}
+               u'name': u'NewName2',
+               u'subscriptions': [768],
+               u'username': u'user3'}}
 ```

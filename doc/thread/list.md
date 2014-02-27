@@ -1,4 +1,5 @@
 #Thread.list
+List threads
 
 ## Supported request methods 
 * GET
@@ -8,10 +9,12 @@
 
 ##Arguments
 ###Optional
-* order
 * since
+   ```str``` include threads created since date. Format: 'YYYY-MM-DD hh-mm-ss'
+* order
+   ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
 
-###Requried
+
 
 
 Requesting http://some.host.ru/db/api/s.stupnikov/thread/list/ with _{'since': '2014-01-02 00:00:00', 'limit': 2, 'order': 'asc', 'forum': 'forumwithsufficientlylargename'}_:

@@ -1,4 +1,5 @@
 #%(header)s
+%(description)s
 
 ## Supported request methods 
 * %(method)s
@@ -7,10 +8,8 @@
 * json
 
 ##Arguments
-###Optional
 %(optional)s
 
-###Requried
 %(requried)s
 
 Requesting %(url)s with _%(params)s_:

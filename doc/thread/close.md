@@ -1,4 +1,5 @@
 #Thread.close
+Mark thread as closed
 
 ## Supported request methods 
 * POST
@@ -7,13 +8,14 @@
 * json
 
 ##Arguments
-###Optional
 
 
 ###Requried
 * thread
+   ```int``` thread id of this post
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/close/ with _{'thread': 171}_:
+
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/close/ with _{'thread': 397}_:
 ```json
-{u'code': 0, u'response': {u'thread': 171}}
+{u'code': 0, u'response': {u'thread': 397}}
 ```

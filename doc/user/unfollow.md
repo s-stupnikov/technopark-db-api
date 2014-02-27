@@ -1,4 +1,5 @@
 #User.unfollow
+Mark one user as not folowing other user anymore
 
 ## Supported request methods 
 * POST
@@ -7,23 +8,25 @@
 * json
 
 ##Arguments
-###Optional
 
 
 ###Requried
-* followee
 * follower
+   ```str``` follower email
+* followee
+   ```str``` followee email
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/unfollow/ with _{'follower': 'example3@mail.ru', 'followee': 'example@mail.ru'}_:
+
+Requesting http://some.host.ru/db/api/s.stupnikov/user/unfollow/ with _{'follower': 'example@mail.ru', 'followee': 'example3@mail.ru'}_:
 ```json
 {u'code': 0,
- u'response': {u'about': u'Wowowowow!!!',
-               u'email': u'example3@mail.ru',
-               u'followers': [u'example@mail.ru'],
+ u'response': {u'about': u'hello im user1',
+               u'email': u'example@mail.ru',
+               u'followers': [],
                u'following': [],
-               u'id': 79,
+               u'id': 588,
                u'isAnonymous': False,
-               u'name': u'NewName2',
-               u'subscriptions': [544],
-               u'username': u'user3'}}
+               u'name': u'John',
+               u'subscriptions': [768],
+               u'username': u'user1'}}
 ```
