@@ -19,22 +19,22 @@ like/dislike post
    ```int``` post id
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/vote/ with ```{'vote': 1, 'post': 553}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/vote/ with **{'vote': -1, 'post': 723}**:
 ```json
 {u'code': 0,
- u'response': {u'date': u'2014-01-03 00:01:01',
-               u'dislikes': 0,
-               u'forum': u'forum3',
-               u'id': 553,
+ u'response': {u'date': u'2014-01-01 00:00:01',
+               u'dislikes': 1,
+               u'forum': u'forum1',
+               u'id': 723,
                u'isApproved': True,
                u'isDeleted': False,
-               u'isEdited': False,
-               u'isHighlighted': False,
+               u'isEdited': True,
+               u'isHighlighted': True,
                u'isSpam': False,
-               u'likes': 1,
+               u'likes': 0,
                u'message': u'my message 1',
                u'parent': None,
-               u'points': 1,
-               u'thread': 855,
-               u'user': u'richard.nixon@example.com'}}
+               u'points': -1,
+               u'thread': 709,
+               u'user': u'example@mail.ru'}}
 ```

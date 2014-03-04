@@ -26,22 +26,22 @@ Get posts from this user
    ```str``` user email
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/listPosts/ with ```{'since': '2014-01-01 00:00:00', 'user': 'example2@mail.ru', 'order': 'asc'}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/user/listPosts/ with **{'since': '2014-01-02 00:00:00', 'limit': 2, 'user': 'example@mail.ru', 'order': 'asc'}**:
 ```json
 {u'code': 0,
- u'response': [{u'date': u'2014-01-01 00:02:01',
+ u'response': [{u'date': u'2014-01-02 00:02:01',
                 u'dislikes': 0,
-                u'forum': u'forum3',
-                u'id': 990,
+                u'forum': u'forum1',
+                u'id': 807,
                 u'isApproved': False,
                 u'isDeleted': False,
                 u'isEdited': True,
                 u'isHighlighted': False,
-                u'isSpam': False,
+                u'isSpam': True,
                 u'likes': 0,
-                u'message': u'my message 3',
-                u'parent': 243,
+                u'message': u'my message 1',
+                u'parent': 780,
                 u'points': 0,
-                u'thread': 311,
-                u'user': u'example2@mail.ru'}]}
+                u'thread': 709,
+                u'user': u'example@mail.ru'}]}
 ```

@@ -12,7 +12,7 @@
 
 %(requried)s
 
-Requesting %(url)s with ```%(params)s```:
+Requesting %(url)s with **%(params)s**:
 ```json
 %(response)s
 ```

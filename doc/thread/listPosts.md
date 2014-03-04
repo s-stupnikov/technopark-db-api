@@ -26,13 +26,13 @@ Get posts from this thread
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/listPosts/ with ```{'since': '2014-01-02 00:00:00', 'limit': 2, 'order': 'asc', 'thread': 311}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/listPosts/ with **{'since': '2014-01-01 00:00:00', 'order': 'desc', 'thread': 709}**:
 ```json
 {u'code': 0,
  u'response': [{u'date': u'2014-01-02 00:02:01',
                 u'dislikes': 0,
-                u'forum': u'forum3',
-                u'id': 870,
+                u'forum': u'forum1',
+                u'id': 807,
                 u'isApproved': False,
                 u'isDeleted': False,
                 u'isEdited': True,
@@ -40,8 +40,38 @@ Requesting http://some.host.ru/db/api/s.stupnikov/thread/listPosts/ with ```{'si
                 u'isSpam': True,
                 u'likes': 0,
                 u'message': u'my message 1',
-                u'parent': 990,
+                u'parent': 780,
                 u'points': 0,
-                u'thread': 311,
-                u'user': u'richard.nixon@example.com'}]}
+                u'thread': 709,
+                u'user': u'example@mail.ru'},
+               {u'date': u'2014-01-01 00:02:01',
+                u'dislikes': 0,
+                u'forum': u'forum1',
+                u'id': 780,
+                u'isApproved': False,
+                u'isDeleted': False,
+                u'isEdited': True,
+                u'isHighlighted': False,
+                u'isSpam': False,
+                u'likes': 0,
+                u'message': u'my message 3',
+                u'parent': 723,
+                u'points': 0,
+                u'thread': 709,
+                u'user': u'example3@mail.ru'},
+               {u'date': u'2014-01-01 00:00:01',
+                u'dislikes': 1,
+                u'forum': u'forum1',
+                u'id': 723,
+                u'isApproved': True,
+                u'isDeleted': False,
+                u'isEdited': True,
+                u'isHighlighted': True,
+                u'isSpam': False,
+                u'likes': 0,
+                u'message': u'my message 1',
+                u'parent': None,
+                u'points': -1,
+                u'thread': 709,
+                u'user': u'example@mail.ru'}]}
 ```

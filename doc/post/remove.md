@@ -16,7 +16,7 @@ Mark post as removed
    ```int``` post id
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/remove/ with ```{'post': 990}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/remove/ with **{'post': 723}**:
 ```json
-{u'code': 0, u'response': {u'post': 990}}
+{u'code': 0, u'response': {u'post': 723}}
 ```

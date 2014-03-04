@@ -47,18 +47,18 @@ Create new post
    ```str``` post body
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/create/ with ```{'isApproved': True, 'user': 'richard.nixon@example.com', 'date': '2014-01-01 00:00:01', 'message': 'my message 1', 'isSpam': False, 'isHighlighted': True, 'thread': 311, 'forum': 'forum3', 'isDeleted': False, 'isEdited': True}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/create/ with **{'isApproved': True, 'user': 'example@mail.ru', 'date': '2014-01-01 00:00:01', 'message': 'my message 1', 'isSpam': False, 'isHighlighted': True, 'thread': 709, 'forum': 'forum1', 'isDeleted': False, 'isEdited': True}**:
 ```json
 {u'code': 0,
  u'response': {u'date': u'2014-01-01 00:00:01',
-               u'forum': u'forum3',
-               u'id': 243,
+               u'forum': u'forum1',
+               u'id': 723,
                u'isApproved': True,
                u'isDeleted': False,
                u'isEdited': True,
                u'isHighlighted': True,
                u'isSpam': False,
                u'message': u'my message 1',
-               u'thread': 311,
-               u'user': u'richard.nixon@example.com'}}
+               u'thread': 709,
+               u'user': u'example@mail.ru'}}
 ```

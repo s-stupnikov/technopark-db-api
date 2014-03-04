@@ -16,7 +16,7 @@ Mark thread as removed
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/remove/ with ```{'thread': 681}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/remove/ with **{'thread': 709}**:
 ```json
-{u'code': 0, u'response': {u'thread': 681}}
+{u'code': 0, u'response': {u'thread': 709}}
 ```

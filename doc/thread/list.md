@@ -29,7 +29,7 @@ List threads
    ```str``` parent forum short_name
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/list/ with ```{'since': '2014-01-02 00:00:00', 'limit': 2, 'order': 'asc', 'forum': 'forumwithsufficientlylargename'}```:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/list/ with **{'since': '2014-01-02 00:00:00', 'limit': 2, 'order': 'asc', 'forum': 'forumwithsufficientlylargename'}**:
 ```json
 {u'code': 0, u'response': []}
 ```
