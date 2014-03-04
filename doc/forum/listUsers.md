@@ -26,34 +26,23 @@ Get user with posts on this forum
    ```str``` forum short_name
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/forum/listUsers/ with **{'order': 'desc', 'forum': 'forum1'}**:
+Requesting http://some.host.ru/db/api/s.stupnikov/forum/listUsers/ with **{'limit': 2, 'since_id': 10, 'forum': 'forumwithsufficientlylargename', 'order': 'asc'}**:
 ```json
 {u'code': 0,
- u'response': [{u'about': u'hello im user1',
-                u'email': u'example@mail.ru',
+ u'response': [{u'email': u'richard.nixon@example.com',
                 u'followers': [],
                 u'following': [],
-                u'id': 943,
-                u'isAnonymous': False,
-                u'name': u'John',
-                u'subscriptions': [],
-                u'username': u'user1'},
-               {u'about': u'hello im user1',
-                u'email': u'example@mail.ru',
+                u'id': 121,
+                u'isAnonymous': True,
+                u'name': None,
+                u'subscriptions': []},
+               {u'about': u'hello im user2',
+                u'email': u'example2@mail.ru',
                 u'followers': [],
                 u'following': [],
-                u'id': 943,
+                u'id': 508,
                 u'isAnonymous': False,
-                u'name': u'John',
+                u'name': u'Jey',
                 u'subscriptions': [],
-                u'username': u'user1'},
-               {u'about': u'hello im user3',
-                u'email': u'example3@mail.ru',
-                u'followers': [],
-                u'following': [],
-                u'id': 344,
-                u'isAnonymous': False,
-                u'name': u'Josh',
-                u'subscriptions': [],
-                u'username': u'user3'}]}
+                u'username': u'user2'}]}
 ```

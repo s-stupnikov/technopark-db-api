@@ -19,22 +19,22 @@ Edit post
    ```str``` post body
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/update/ with **{'post': 723, 'message': 'my message 1'}**:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/update/ with **{'post': 18, 'message': 'my message 1'}**:
 ```json
 {u'code': 0,
- u'response': {u'date': u'2014-01-01 00:00:01',
+ u'response': {u'date': u'2014-01-03 00:01:01',
                u'dislikes': 0,
-               u'forum': u'forum1',
-               u'id': 723,
+               u'forum': u'forum2',
+               u'id': 18,
                u'isApproved': True,
                u'isDeleted': False,
-               u'isEdited': True,
-               u'isHighlighted': True,
+               u'isEdited': False,
+               u'isHighlighted': False,
                u'isSpam': False,
                u'likes': 0,
                u'message': u'my message 1',
                u'parent': None,
                u'points': 0,
-               u'thread': 709,
-               u'user': u'example@mail.ru'}}
+               u'thread': 348,
+               u'user': u'example4@mail.ru'}}
 ```

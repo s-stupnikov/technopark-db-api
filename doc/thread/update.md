@@ -22,20 +22,20 @@ Edit thread
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/update/ with **{'message': 'hey hey hey!', 'slug': 'newslug', 'thread': 709}**:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/update/ with **{'message': 'hey hey hey hey!', 'slug': 'newslug', 'thread': 504}**:
 ```json
 {u'code': 0,
- u'response': {u'date': u'2013-12-29 00:01:01',
+ u'response': {u'date': u'2014-01-01 00:00:01',
                u'dislikes': 0,
-               u'forum': u'forum1',
-               u'id': 709,
+               u'forum': u'forumwithsufficientlylargename',
+               u'id': 504,
                u'isClosed': False,
                u'isDeleted': False,
                u'likes': 0,
-               u'message': u'hey hey hey!',
+               u'message': u'hey hey hey hey!',
                u'points': 0,
-               u'posts': 3,
+               u'posts': 0,
                u'slug': u'newslug',
-               u'title': u'\u0422\u0440\u0435\u0434 \u0422\u0440\u0438',
-               u'user': u'richard.nixon@example.com'}}
+               u'title': u'Thread With Sufficiently Large Title',
+               u'user': u'example2@mail.ru'}}
 ```

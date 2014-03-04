@@ -16,7 +16,7 @@ Cancel removal
    ```int``` post id
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/restore/ with **{'post': 723}**:
+Requesting http://some.host.ru/db/api/s.stupnikov/post/restore/ with **{'post': 18}**:
 ```json
-{u'code': 0, u'response': {u'post': 723}}
+{u'code': 0, u'response': {u'post': 18}}
 ```

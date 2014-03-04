@@ -25,7 +25,7 @@ DISCR = {
 			'order': "```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'",
 			'thread': '```int``` thread id of this post',
 			'post': '```int``` post id',
-			'parent': '```int``` id of parent post',
+			'parent': '```int``` id of parent post. Default: None',
 			'forum': '```str``` forum short_name',
 			'message': '```str``` post body',
 			'vote': "```int``` like/dislike. Possible values: [1, -1]",

@@ -23,13 +23,13 @@ Get forum details
 Requesting http://some.host.ru/db/api/s.stupnikov/forum/details/ with **{'related': ['user'], 'forum': 'forum3'}**:
 ```json
 {u'code': 0,
- u'response': {u'id': 142,
+ u'response': {u'id': 681,
                u'name': u'\u0424\u043e\u0440\u0443\u043c \u0422\u0440\u0438',
                u'short_name': u'forum3',
                u'user': {u'email': u'richard.nixon@example.com',
                          u'followers': [],
                          u'following': [],
-                         u'id': 137,
+                         u'id': 121,
                          u'isAnonymous': True,
                          u'name': None,
                          u'subscriptions': []}}}
