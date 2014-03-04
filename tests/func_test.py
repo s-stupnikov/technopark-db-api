@@ -11,7 +11,9 @@ import datetime
 
 import func_test_constants as constants
 sys.path.append('../lib')
+sys.path.append('../doc')
 import tools
+from doc_conf import DISCR
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
 settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
@@ -42,6 +44,7 @@ class TestError(object):
         if exit:
             sys.exit(0)        
 
+docs = {}
 class Actor(object):
     # 0 - OK
     # 1 - error
@@ -57,6 +60,7 @@ class Actor(object):
         try:
             start = time.time()
             response = tools.Request(url, query_dict, post).get_response()
+            self.doc(url, query_dict, method, response)
             req_time = time.time() - start
             log.write('Request time was: %.4f sec' % req_time)
         except ValueError, e:
@@ -64,6 +68,38 @@ class Actor(object):
             log.write('Exiting', level='error')
             raise ValueError
         return response
+
+    def doc(self, url, query_dict, method, response):
+        optional_args = set(['order', 'since', 'since_id', 'limit', 'related', 'isAnonymous', 'isApproved', 'isSpam', 'isDeleted', 'isEdited', 'isHighlighted', 'parent'])
+        get_arg_type = lambda k: 'optional' if k in optional_args else 'requried'
+        path_parts = url.split('stupnikov')[1].strip('/').split('/')
+        entity_name = path_parts[0]
+        entity_method = path_parts[1]
+        path = os.path.join('../doc', entity_name, entity_method + '.md')
+        response = {u'code': 0, u'response': response}
+        context = {
+            'entity_name': entity_name,
+            'entity_method': entity_method,
+            'method': method,
+            'requried': set(),
+            'optional': set(),
+            'response': pprint.pformat(response),
+            'url': url.replace('127.0.0.1:5000', 'some.host.ru'),
+            'params': str(query_dict),
+        }
+        for k in query_dict:
+            context[get_arg_type(k)].add(k)
+
+        if path not in docs:
+            docs[path] = context
+        else:
+            for p in context['optional']: docs[path]['optional'].add(p)
+            for p in context['requried']: docs[path]['requried'].add(p)
+            # docs[path]['requried'] &= context['requried']
+            if '[]' in docs[path]['response'] and response['response']:
+                docs[path]['url'] = context['url']
+                docs[path]['response'] = context['response']
+                docs[path]['params'] = context['params']
 
     def _create_from_dict(self, response, new_type=None):
         cls_for_location = {
@@ -95,8 +131,7 @@ class Actor(object):
     def create(self, query_dict):
         related_for_type = {
             'thread': ['forum', 'user'],
-            'user': [],
-            'forum': [],
+            'forum': ['user'],
             'post': ['thread', 'forum', 'user'],
         }
         url_suffix = 'create'
@@ -105,15 +140,15 @@ class Actor(object):
         test_obj = self._create_from_dict(query_dict)        
         test_obj.id = api_obj.id
         self._trigger_side_effects(test_obj)
-        self.validate_single(test_obj, related=related_for_type[test_obj.type])
+        self.validate_single(test_obj, related=related_for_type.get(test_obj.type))
         return test_obj
 
     def details(self, obj, related):
         url_suffix = 'details'
         query_dict = {
             obj.type: obj.unique_id,
-            'related': related,
         }
+        if related: query_dict['related'] = related
 
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
         obj = self._create_from_dict(response)        
@@ -691,6 +726,41 @@ class TestScenario(object):
             followee = self.users[params['followee']]
             self.user_actor.unfollow(params, follower, followee)
 
+def produce_docs():
+    tpl = open('../doc/doc_template.md').read()
+    toc = {}
+    for doc_path, context in docs.iteritems():
+        doc_fn = os.path.basename(doc_path)
+        doc_dir = os.path.dirname(doc_path)
+        if not os.path.exists(doc_dir):
+            os.makedirs(doc_dir)
+
+        context['description'] = DISCR[context['entity_name']]['methods'][context['entity_method']]
+        context['header'] = context['entity_name'].capitalize() + '.' + context['entity_method']
+        for arg_type in ('optional', 'requried'):
+            fields = copy.deepcopy(context[arg_type])
+            context[arg_type] = ''
+            for field in fields:
+                context[arg_type] += '* ' + field + '\n\n'
+                context[arg_type] += '   ' + DISCR[context['entity_name']]['fields'][field] + '\n'
+
+            if context[arg_type]:
+                context[arg_type] =  '###%s\n' % arg_type.capitalize() + context[arg_type]
+        with open(doc_path, 'w') as fd:
+            fd.write(tpl % context)
+
+    #     entity, method = context['header'].split('.')
+    #     if entity not in toc:
+    #         toc[entity] = []
+    #     toc[entity].append((method, os.path.join('./doc/', entity.lower(), doc_fn)))
+    # with open('../README.md', 'a') as readme:
+    #     for entity in toc:
+    #         readme.write('##' + entity + '\n')
+    #         for method, url in sorted(toc[entity], key=lambda t: t[0]):
+    #             readme.write('* [%s](%s)\n' % (method, url))
+    #         readme.write('\n')
+
+
 if __name__ == '__main__':
     passed = True
     student_name='s.stupnikov'
@@ -703,9 +773,12 @@ if __name__ == '__main__':
     
     record = {
         'log': log.test_log,
-        'student': student_name,
         'start_time': start,
         'passed': passed,
+        'test': 'functional'
     }
     m = tools.mongodb(collection='functional_test')
-    m.insert(record)
+    # produce_docs()
+    # m.collection.update({'student_name': student_name}, {'$push': {'tests': record}})
+    # m.insert(record)
+    
