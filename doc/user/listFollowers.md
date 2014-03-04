@@ -9,6 +9,9 @@ Get followers of this user
 
 ##Arguments
 ###Optional
+* limit
+
+   ```int``` return limit
 * order
 
    ```str``` sort order (by name). Possible values: ```['desc', 'asc']```. Default: 'desc'
@@ -18,6 +21,9 @@ Get followers of this user
 * user
 
    ```str``` user email
+* since_id
+
+   ```int``` return users in interval [since_id, max_id]
 
 
 Requesting http://some.host.ru/db/api/s.stupnikov/user/listFollowers/ with _{'user': 'example@mail.ru', 'order': 'asc'}_:
@@ -27,9 +33,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/listFollowers/ with _{'us
                 u'email': u'example3@mail.ru',
                 u'followers': [u'example@mail.ru'],
                 u'following': [u'example@mail.ru'],
-                u'id': 726,
+                u'id': 489,
                 u'isAnonymous': False,
                 u'name': u'NewName2',
-                u'subscriptions': [358],
+                u'subscriptions': [],
                 u'username': u'user3'}]}
 ```

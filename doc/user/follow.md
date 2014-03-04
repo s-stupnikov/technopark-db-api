@@ -26,7 +26,7 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/follow/ with _{'follower'
                u'email': u'example@mail.ru',
                u'followers': [u'example3@mail.ru'],
                u'following': [u'example3@mail.ru'],
-               u'id': 368,
+               u'id': 951,
                u'isAnonymous': False,
                u'name': u'John',
                u'subscriptions': [],

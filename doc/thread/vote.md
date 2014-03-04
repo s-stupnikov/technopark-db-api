@@ -19,20 +19,20 @@ like/dislike thread
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/vote/ with _{'vote': 1, 'thread': 295}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/vote/ with _{'vote': -1, 'thread': 762}_:
 ```json
 {u'code': 0,
- u'response': {u'date': u'2013-12-30 00:01:01',
-               u'dislikes': 0,
+ u'response': {u'date': u'2013-12-31 00:01:01',
+               u'dislikes': 1,
                u'forum': u'forumwithsufficientlylargename',
-               u'id': 295,
+               u'id': 762,
                u'isClosed': False,
                u'isDeleted': False,
-               u'likes': 1,
-               u'message': u'hey hey!',
-               u'points': 1,
+               u'likes': 0,
+               u'message': u'hey!',
+               u'points': -1,
                u'posts': 0,
-               u'slug': u'thread2',
-               u'title': u'Thread II',
-               u'user': u'example2@mail.ru'}}
+               u'slug': u'thread1',
+               u'title': u'Thread I',
+               u'user': u'richard.nixon@example.com'}}
 ```

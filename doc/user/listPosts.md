@@ -26,37 +26,7 @@ Get posts from this user
    ```str``` user email
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/listPosts/ with _{'since': '2014-01-03 00:00:00', 'limit': 3, 'user': 'example3@mail.ru', 'order': 'desc'}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/user/listPosts/ with _{'since': '2014-01-02 00:00:00', 'limit': 2, 'user': 'example@mail.ru', 'order': 'asc'}_:
 ```json
-{u'code': 0,
- u'response': [{u'date': u'2014-01-03 00:08:01',
-                u'dislikes': 0,
-                u'forum': u'forum3',
-                u'id': 162,
-                u'isApproved': False,
-                u'isDeleted': False,
-                u'isEdited': False,
-                u'isHighlighted': False,
-                u'isSpam': False,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': None,
-                u'points': 0,
-                u'thread': 184,
-                u'user': u'example3@mail.ru'},
-               {u'date': u'2014-01-03 00:01:01',
-                u'dislikes': 0,
-                u'forum': u'forum3',
-                u'id': 585,
-                u'isApproved': True,
-                u'isDeleted': False,
-                u'isEdited': False,
-                u'isHighlighted': False,
-                u'isSpam': False,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': None,
-                u'points': 0,
-                u'thread': 184,
-                u'user': u'example3@mail.ru'}]}
+{u'code': 0, u'response': []}
 ```

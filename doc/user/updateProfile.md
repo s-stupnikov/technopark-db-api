@@ -29,9 +29,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/updateProfile/ with _{'ab
                u'email': u'example3@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 726,
+               u'id': 489,
                u'isAnonymous': False,
                u'name': u'NewName2',
-               u'subscriptions': [358],
+               u'subscriptions': [],
                u'username': u'user3'}}
 ```

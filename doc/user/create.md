@@ -15,6 +15,12 @@ Create new user
 
 
 ###Requried
+* username
+
+   ```str``` user name
+* about
+
+   ```str``` user info
 * name
 
    ```str``` user name
@@ -28,7 +34,7 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/create/ with _{'username'
 {u'code': 0,
  u'response': {u'about': u'hello im user1',
                u'email': u'example@mail.ru',
-               u'id': 368,
+               u'id': 951,
                u'isAnonymous': False,
                u'name': u'John',
                u'username': u'user1'}}

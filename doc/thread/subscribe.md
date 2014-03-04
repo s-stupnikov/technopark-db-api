@@ -19,7 +19,7 @@ Subscribe user to this thread
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/subscribe/ with _{'user': 'example2@mail.ru', 'thread': 295}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/subscribe/ with _{'user': 'example2@mail.ru', 'thread': 36}_:
 ```json
-{u'code': 0, u'response': {u'thread': 295, u'user': u'example2@mail.ru'}}
+{u'code': 0, u'response': {u'thread': 36, u'user': u'example2@mail.ru'}}
 ```
