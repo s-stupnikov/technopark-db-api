@@ -26,9 +26,9 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/unfollow/ with _{'followe
                u'email': u'example@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 951,
+               u'id': 988,
                u'isAnonymous': False,
                u'name': u'John',
-               u'subscriptions': [],
+               u'subscriptions': [256],
                u'username': u'user1'}}
 ```

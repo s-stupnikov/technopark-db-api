@@ -38,16 +38,16 @@ Create new thread
    ```str``` thread slug
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/create/ with _{'forum': 'forum3', 'title': 'Thread With Sufficiently Large Title', 'isClosed': True, 'user': 'example3@mail.ru', 'date': '2014-01-01 00:00:01', 'message': 'hey hey hey hey!', 'slug': 'Threadwithsufficientlylargetitle', 'isDeleted': True}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/create/ with _{'forum': 'forumwithsufficientlylargename', 'title': 'Thread With Sufficiently Large Title', 'isClosed': True, 'user': 'richard.nixon@example.com', 'date': '2014-01-01 00:00:01', 'message': 'hey hey hey hey!', 'slug': 'Threadwithsufficientlylargetitle', 'isDeleted': True}_:
 ```json
 {u'code': 0,
  u'response': {u'date': u'2014-01-01 00:00:01',
-               u'forum': u'forum3',
-               u'id': 965,
+               u'forum': u'forumwithsufficientlylargename',
+               u'id': 668,
                u'isClosed': True,
                u'isDeleted': True,
                u'message': u'hey hey hey hey!',
                u'slug': u'Threadwithsufficientlylargetitle',
                u'title': u'Thread With Sufficiently Large Title',
-               u'user': u'example3@mail.ru'}}
+               u'user': u'richard.nixon@example.com'}}
 ```

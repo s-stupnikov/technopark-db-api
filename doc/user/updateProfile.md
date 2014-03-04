@@ -29,7 +29,7 @@ Requesting http://some.host.ru/db/api/s.stupnikov/user/updateProfile/ with _{'ab
                u'email': u'example3@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 489,
+               u'id': 522,
                u'isAnonymous': False,
                u'name': u'NewName2',
                u'subscriptions': [],
