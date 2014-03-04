@@ -16,7 +16,7 @@ Mark thread as opened
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/open/ with _{'thread': 256}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/thread/open/ with ```{'thread': 681}```:
 ```json
-{u'code': 0, u'response': {u'thread': 256}}
+{u'code': 0, u'response': {u'thread': 681}}
 ```

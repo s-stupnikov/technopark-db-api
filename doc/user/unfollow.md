@@ -19,16 +19,16 @@ Mark one user as not folowing other user anymore
    ```str``` followee email
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/unfollow/ with _{'follower': 'example@mail.ru', 'followee': 'example3@mail.ru'}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/user/unfollow/ with ```{'follower': 'example@mail.ru', 'followee': 'example3@mail.ru'}```:
 ```json
 {u'code': 0,
  u'response': {u'about': u'hello im user1',
                u'email': u'example@mail.ru',
                u'followers': [],
                u'following': [],
-               u'id': 988,
+               u'id': 694,
                u'isAnonymous': False,
                u'name': u'John',
-               u'subscriptions': [256],
+               u'subscriptions': [855, 681],
                u'username': u'user1'}}
 ```

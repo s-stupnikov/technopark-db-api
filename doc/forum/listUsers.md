@@ -17,7 +17,7 @@ Get user with posts on this forum
    ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
 * since_id
 
-   ```int``` return forums in interval [since_id, max_id]
+   ```int``` return entities in interval [since_id, max_id]
 
 
 ###Requried
@@ -26,23 +26,7 @@ Get user with posts on this forum
    ```str``` forum short_name
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/forum/listUsers/ with _{'limit': 2, 'since_id': 10, 'forum': 'forumwithsufficientlylargename', 'order': 'asc'}_:
+Requesting http://some.host.ru/db/api/s.stupnikov/forum/listUsers/ with ```{'limit': 2, 'since_id': 10, 'forum': 'forumwithsufficientlylargename', 'order': 'asc'}```:
 ```json
-{u'code': 0,
- u'response': [{u'email': u'richard.nixon@example.com',
-                u'followers': [],
-                u'following': [],
-                u'id': 26,
-                u'isAnonymous': True,
-                u'name': None,
-                u'subscriptions': []},
-               {u'about': u'hello im user3',
-                u'email': u'example3@mail.ru',
-                u'followers': [],
-                u'following': [],
-                u'id': 522,
-                u'isAnonymous': False,
-                u'name': u'Josh',
-                u'subscriptions': [],
-                u'username': u'user3'}]}
+{u'code': 0, u'response': []}
 ```
