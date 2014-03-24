@@ -17,7 +17,7 @@ Get posts from this user
    ```int``` return limit
 * order
 
-   ```str``` sort order (by name). Possible values: ```['desc', 'asc']```. Default: 'desc'
+   ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
 
 
 ###Requried
