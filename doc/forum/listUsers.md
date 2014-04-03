@@ -35,6 +35,8 @@ Requesting http://some.host.ru/db/api/s.stupnikov/forum/listUsers/ with **{'limi
                 u'id': 121,
                 u'isAnonymous': True,
                 u'name': None,
+                u'username': None,
+                u'about': None,
                 u'subscriptions': []},
                {u'about': u'hello im user2',
                 u'email': u'example2@mail.ru',
