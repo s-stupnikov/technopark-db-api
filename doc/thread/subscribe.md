@@ -13,7 +13,7 @@ Subscribe user to this thread
 ###Requried
 * user
 
-   ```str``` founder email
+   ```str``` subscriber email
 * thread
 
    ```int``` thread id of this post
