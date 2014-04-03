@@ -14,7 +14,7 @@ Get user with posts on this forum
    ```int``` return limit
 * order
 
-   ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
+   ```str``` sort order (by id). Possible values: ```['desc', 'asc']```. Default: 'desc'
 * since_id
 
    ```int``` return entities in interval [since_id, max_id]
