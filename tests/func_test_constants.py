@@ -120,6 +120,8 @@ USERS = [
             },
             {
                 "name": None,
+                "username": None,
+                "about": None,
                 "isAnonymous": True,
                 "email":"richard.nixon@example.com"
             },

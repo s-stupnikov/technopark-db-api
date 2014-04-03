@@ -385,8 +385,8 @@ class ForumEntity(object):
             'user': User,
         }
         if obj:
-            to_dict = self.__dict__
-            ao_dict = obj.__dict__
+            to_dict = copy.deepcopy(self.__dict__)
+            ao_dict = copy.deepcopy(obj.__dict__)
 
             for attr in to_dict:
                 if attr in ao_dict:
@@ -407,6 +407,9 @@ class ForumEntity(object):
                             log.write('Related <%s> from API response [%s] dont match test object [%s]' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
                             raise ValueError
                             # return -1
+                    if isinstance(to_dict[attr], (set,list)) and isinstance(ao_dict[attr], (set, list)):
+                        to_dict[attr] = set(to_dict[attr])
+                        ao_dict[attr] = set(ao_dict[attr])
                     if to_dict[attr] != ao_dict[attr]:
                         log.write('Attribute <%s> from API response (value=%s) dont match test object (value=%s)' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
                         return -1
@@ -619,7 +622,8 @@ class TestScenario(object):
                 user = self.users[p.user]
                 forum = self.forums[p.forum]
                 if forum.short_name == params['forum']:
-                    objects.append(user)
+                    if user.id not in [u.id for u in objects]:
+                        objects.append(user)
             params_cp = copy.deepcopy(params)
             del params_cp['forum']
             elist = EntitiesList(objects, **params_cp)
@@ -726,7 +730,7 @@ class TestScenario(object):
             followee = self.users[params['followee']]
             self.user_actor.unfollow(params, follower, followee)
 
-def produce_docs():
+def produce_docs(with_toc=False):
     tpl = open('../doc/doc_template.md').read()
     toc = {}
     for doc_path, context in docs.iteritems():
@@ -749,16 +753,17 @@ def produce_docs():
         with open(doc_path, 'w') as fd:
             fd.write(tpl % context)
 
-    #     entity, method = context['header'].split('.')
-    #     if entity not in toc:
-    #         toc[entity] = []
-    #     toc[entity].append((method, os.path.join('./doc/', entity.lower(), doc_fn)))
-    # with open('../README.md', 'a') as readme:
-    #     for entity in toc:
-    #         readme.write('##' + entity + '\n')
-    #         for method, url in sorted(toc[entity], key=lambda t: t[0]):
-    #             readme.write('* [%s](%s)\n' % (method, url))
-    #         readme.write('\n')
+        entity, method = context['header'].split('.')
+        if entity not in toc:
+            toc[entity] = []
+        toc[entity].append((method, os.path.join('./doc/', entity.lower(), doc_fn)))
+    if with_toc:
+        with open('../README.md', 'a') as readme:
+            for entity in toc:
+                readme.write('##' + entity + '\n')
+                for method, url in sorted(toc[entity], key=lambda t: t[0]):
+                    readme.write('* [%s](%s)\n' % (method, url))
+                readme.write('\n')
 
 
 if __name__ == '__main__':
@@ -777,7 +782,7 @@ if __name__ == '__main__':
         'passed': passed,
         'test': 'functional'
     }
-    m = tools.mongodb(collection='functional_test')
+    # m = tools.mongodb(collection='functional_test')
     # produce_docs()
     # m.collection.update({'student_name': student_name}, {'$push': {'tests': record}})
     # m.insert(record)
