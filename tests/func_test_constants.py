@@ -238,12 +238,10 @@ TEST_POSTS = {
             'order': 'desc',
         },
         {
-            'thread': 'thread2',
             'since': '2014-01-01 00:00:00',
             'order': 'desc',
         },
         {
-            'thread': 'thread3',
             'since': '2014-01-03 00:00:00',
             'order': 'desc',
             'limit': 3,

@@ -633,7 +633,10 @@ class TestScenario(object):
         # print 'TEST POSTS'
         log.write('List posts')
         for params in constants.TEST_POSTS['list']:
-            objects = copy.deepcopy(self.posts.values()) 
+            objects = copy.deepcopy(self.posts.values())
+            if 'forum' not in params:
+                thread = random.choice(self.threads.values()) 
+                params['thread'] = thread.id
             elist = EntitiesList(objects, **params)
             self.post_actor.list(params, elist.objects)
         
