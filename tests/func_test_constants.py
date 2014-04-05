@@ -310,7 +310,7 @@ TEST_USERS = {
             'order': 'asc',
         },
         {
-            "user":"example1@mail.ru",
+            "user":"richard.nixon@example.com",
             'since': '2014-01-01 00:00:00',
             'order': 'desc',
         },
