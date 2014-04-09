@@ -144,8 +144,8 @@ class Actor(object):
         url_suffix = 'create'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
         api_obj = self._create_from_dict(response)        
-        test_obj = self._create_from_dict(query_dict)        
-        test_obj.id = api_obj.id
+        test_obj = self._create_from_dict(query_dict)
+        test_obj.id = api_obj.id if hasattr(api_obj, 'id') else -1
         self._trigger_side_effects(test_obj)
         self.validate_single(test_obj, related=related_for_type.get(test_obj.type))
         return test_obj
