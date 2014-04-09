@@ -25,6 +25,7 @@ class TestLog(object):
     def write(self, message, level='info'):
         time = datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S] ')
         msg = time + message
+        # print message
         self.test_log.append({'message': message, 'level': level})
 
 log = TestLog()
@@ -45,6 +46,7 @@ class TestError(object):
             sys.exit(0)        
 
 docs = {}
+TESTS = {}
 class Actor(object):
     # 0 - OK
     # 1 - error
@@ -55,6 +57,8 @@ class Actor(object):
 
     def query_api(self, url_suffix, query_dict, post=False):
         url = self.url_prefix + '/' + url_suffix + '/'
+        if 'details' not  in url_suffix:
+            self.url_suffix = url_suffix
         method = 'POST' if post else 'GET'
         log.write('Requesting %s with %s (%s)' % (url, str(query_dict), method))
         try:
@@ -154,27 +158,39 @@ class Actor(object):
         obj = self._create_from_dict(response)        
         return obj
 
+    def _get_api_location(self):
+        return self.url_prefix.split('/')[-1] + '/' + self.url_suffix
+
     def validate_single(self, test_obj, related=None):
+        location = self._get_api_location()
         log.write('Validating by requesting object details')
         if related is None:
             related = []
         api_obj = self.details(obj=test_obj, related=related)
         if test_obj != api_obj:
-            raise ValueError
+            TESTS[location] = False
+            # raise ValueError
             # return False
+        if TESTS.get(location, True):
+            TESTS[location] = True
         return True
 
     def validate_list(self, test_obj_list, api_obj_list):
+        location = self._get_api_location()
         log.write('Validating by requesting list of objects')
         if len(api_obj_list) == len(test_obj_list):
             for test_obj, api_obj in zip(test_obj_list, api_obj_list):
                 if test_obj != api_obj:
-                    raise ValueError
+                    TESTS[location] = False
+                    # raise ValueError
                     # return False
         else:
+            TESTS[location] = False
             log.write('len(api objects list) != len(test object list): %d != %d' % (len(api_obj_list), len(test_obj_list)), level='error')
-            raise ValueError
+            # raise ValueError
             # return False
+        if TESTS.get(location, True):
+            TESTS[location] = True
         return True
 
 
@@ -779,6 +795,8 @@ if __name__ == '__main__':
     except ValueError:
         passed = False
     
+    # pprint.pprint(TESTS)
+    # print '%d/%d tests passed' % (sum(1 for t in TESTS.values() if t), len(TESTS))
     record = {
         'log': log.test_log,
         'start_time': start,

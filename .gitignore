@@ -1,4 +1,5 @@
 tools_testing.conf
+students.py
 
 *.py[cod]
 

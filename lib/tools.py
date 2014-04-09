@@ -1,6 +1,7 @@
 import json
 import urllib
 import urllib2
+import smtplib
 import urlparse
 import unittest
 import ConfigParser
@@ -107,6 +108,22 @@ class Database(object):
             cursor.execute(sql)
         return self.dictfetchall(cursor)
 
+def sendemail(to_addr_list, subject, message):
+    from_addr = 'st.stupnikov@gmail.com'
+    header  = 'From: %s\n' % from_addr
+    header += 'To: %s\n' % ','.join(to_addr_list)
+    header += 'Subject: %s\n\n' % subject
+    message = header + message
+
+    google_smtp = 'smtp.gmail.com:587'
+    mail_settings = Configuration('/usr/local/etc/test.conf').get_section('mail')
+    server = smtplib.SMTP(google_smtp)
+    server.starttls()
+    server.login(mail_settings['login'], mail_settings['password'])
+    problems = server.sendmail(from_addr, to_addr_list, message)
+    server.quit()
+
+
 def test():
     test_conf = Configuration('/usr/local/etc/test.conf')
     assert test_conf.get_section('testing_section')['foo'] == 'bar'
@@ -115,6 +132,7 @@ def test():
     test_response = Request('http://127.0.0.1:5000/db/api/1/testing_location/?one=two', query_args={'foo': 'bar'}).get_response()
     assert test_response['foo'][0] == 'bar'
     assert test_response['one'][0] == 'two'
+    sendemail(to_addr_list=('s.stupnikov@corp.mail.ru',), subject='Hello', message='World')
     print 'TESTS: OK'
 
 if __name__ == '__main__':
