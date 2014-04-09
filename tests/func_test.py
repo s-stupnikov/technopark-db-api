@@ -8,12 +8,15 @@ import pprint
 import random
 import urlparse
 import datetime
+from optparse import OptionParser
 
 import func_test_constants as constants
 sys.path.append('../lib')
 sys.path.append('../doc')
+
 import tools
 from doc_conf import DISCR
+from students import students
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
 settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
@@ -51,8 +54,8 @@ class Actor(object):
     # 0 - OK
     # 1 - error
     # 2 - response != expected_response
-    def __init__(self, student_name):
-        self.url_prefix = urlparse.urljoin(settings['url'], student_name)
+    def __init__(self, student_ip):
+        self.url_prefix = settings['url'].replace('ip', student_ip)
         self.ok_response = {'message': 'OK', 'code': 0}
 
     def query_api(self, url_suffix, query_dict, post=False):
@@ -76,7 +79,7 @@ class Actor(object):
     def doc(self, url, query_dict, method, response):
         optional_args = set(['order', 'since', 'since_id', 'limit', 'related', 'isAnonymous', 'isApproved', 'isSpam', 'isDeleted', 'isEdited', 'isHighlighted', 'parent'])
         get_arg_type = lambda k: 'optional' if k in optional_args else 'requried'
-        path_parts = url.split('stupnikov')[1].strip('/').split('/')
+        path_parts = url.split('api')[1].strip('/').split('/')
         entity_name = path_parts[0]
         entity_method = path_parts[1]
         path = os.path.join('../doc', entity_name, entity_method + '.md')
@@ -195,8 +198,8 @@ class Actor(object):
 
 
 class ForumActor(Actor):
-    def __init__(self, student_name):
-        super(ForumActor, self).__init__(student_name)
+    def __init__(self, student_ip):
+        super(ForumActor, self).__init__(student_ip)
         self.url_prefix = self.url_prefix + '/forum'
 
     def list_type(self, obj_type, query_dict, validate_against):
@@ -207,8 +210,8 @@ class ForumActor(Actor):
 
 
 class ThreadActor(Actor):
-    def __init__(self, student_name):
-        super(ThreadActor, self).__init__(student_name)
+    def __init__(self, student_ip):
+        super(ThreadActor, self).__init__(student_ip)
         self.url_prefix = self.url_prefix + '/thread'
 
     def list(self, query_dict, validate_against):
@@ -281,8 +284,8 @@ class ThreadActor(Actor):
 
 
 class PostActor(Actor):
-    def __init__(self, student_name):
-        super(PostActor, self).__init__(student_name)
+    def __init__(self, student_ip):
+        super(PostActor, self).__init__(student_ip)
         self.url_prefix = self.url_prefix + '/post'
 
     def list(self, query_dict, validate_against):
@@ -319,8 +322,8 @@ class PostActor(Actor):
         return self.validate_single(post)
 
 class UserActor(Actor):
-    def __init__(self, student_name):
-        super(UserActor, self).__init__(student_name)
+    def __init__(self, student_ip):
+        super(UserActor, self).__init__(student_ip)
         self.url_prefix = self.url_prefix + '/user'
 
     def update_profile(self, query_dict, user):
@@ -564,11 +567,11 @@ class TestScenario(object):
         container = TestScenario.container_for_type[obj_type]
         return container[obj_id]
 
-    def __init__(self, student_name):
-        self.forum_actor = ForumActor(student_name)
-        self.post_actor = PostActor(student_name)
-        self.thread_actor = ThreadActor(student_name)
-        self.user_actor = UserActor(student_name)
+    def __init__(self, student_ip):
+        self.forum_actor = ForumActor(student_ip)
+        self.post_actor = PostActor(student_ip)
+        self.thread_actor = ThreadActor(student_ip)
+        self.user_actor = UserActor(student_ip)
         self.test_conf = constants.TEST_CONF
 
     def start(self):
@@ -786,25 +789,46 @@ def produce_docs(with_toc=False):
 
 
 if __name__ == '__main__':
-    passed = True
-    student_name='s.stupnikov'
-    start = datetime.datetime.now()
-    log.write('Testing started for: %s' % student_name)
-    try:
-        TestScenario(student_name=student_name).start()
-    except ValueError:
-        passed = False
-    
-    # pprint.pprint(TESTS)
-    # print '%d/%d tests passed' % (sum(1 for t in TESTS.values() if t), len(TESTS))
-    record = {
-        'log': log.test_log,
-        'start_time': start,
-        'passed': passed,
-        'test': 'functional'
-    }
-    # m = tools.mongodb(collection='functional_test')
-    # produce_docs()
-    # m.collection.update({'student_name': student_name}, {'$push': {'tests': record}})
-    # m.insert(record)
+    parser = OptionParser()
+    parser.add_option("-d", "--debug", dest="is_debug_mode",
+                      action="store_true", default=False)
+    (options, args) = parser.parse_args()
+    DEBUG = options.is_debug_mode
+    students  = {u'Иван Иванов': {'ip': '127.0.0.1:5000', 'email': 's.stupnikov@corp.mail.ru'}} if DEBUG else students
+    for name, info in students.items():
+        name_utf = name.encode('utf-8')
+        ans = raw_input('Test this student %s ? [y/N]' % name_utf)
+        if ans == 'y':
+            start = datetime.datetime.now()
+            log.write('Testing started for: %s' % info['ip'])
+            passed = True
+            try:
+                TestScenario(student_ip=info['ip']).start()
+            except ValueError:
+                passed = False
+                
+            if not passed:
+                for line in log.test_log:
+                    print '%s: %s\n' % (line['level'], line['message'])
+            pprint.pprint(TESTS)
+            passed_str = '%d/%d tests passed' % (sum(1 for t in TESTS.values() if t), len(TESTS))
+            print passed_str
+            record = {
+                'log': log.test_log,
+                'start_time': start,
+                'passed': passed,
+                'test': 'functional'
+            }
+            ans = raw_input('Send email ? [y/N]')
+            if ans == 'y':
+                log_txt = ''
+                for line in log.test_log:
+                    log_txt += '%s: %s\n' % (line['level'], line['message'])
+                message = 'RESULTS:\n' + passed_str + '\n' + pprint.pformat(TESTS) + '\n\nTEST LOG:\n' + log_txt
+                tools.sendemail(to_addr_list=(info['email'],), subject='[TP]DB API: functional test results', message=message)
+
+            # m = tools.mongodb(collection='functional_test')
+            # produce_docs()
+            # m.collection.update({'student_ip': student_ip}, {'$push': {'tests': record}})
+            # m.insert(record)
     

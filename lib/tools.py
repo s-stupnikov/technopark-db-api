@@ -6,8 +6,11 @@ import urlparse
 import unittest
 import ConfigParser
 
-import MySQLdb
-from pymongo import MongoClient
+try:
+    import MySQLdb
+    from pymongo import MongoClient
+except ImportError:
+    pass
 
 class Configuration(object):
     def __init__(self, config_path):
