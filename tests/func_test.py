@@ -424,8 +424,8 @@ class ForumEntity(object):
                             related_to = TestScenario.get_eq_obj(related_ao)
                         if related_to != related_ao:
                             log.write('Related <%s> from API response [%s] dont match test object [%s]' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
-                            raise ValueError
-                            # return -1
+                            # raise ValueError
+                            return -1
                     if isinstance(to_dict[attr], (set,list)) and isinstance(ao_dict[attr], (set, list)):
                         to_dict[attr] = set(to_dict[attr])
                         ao_dict[attr] = set(ao_dict[attr])
