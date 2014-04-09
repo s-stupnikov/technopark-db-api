@@ -20,7 +20,7 @@ Get threads from this forum
    ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
 * related
 
-   ```array``` include related entities. Possible values: ```['user',]```. Default: []
+   ```array``` include related entities. Possible values: ```['user', 'forum']```. Default: []
 
 
 ###Requried
