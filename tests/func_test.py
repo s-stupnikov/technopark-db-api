@@ -797,7 +797,7 @@ if __name__ == '__main__':
     students  = {u'Иван Иванов': {'ip': '127.0.0.1:5000', 'email': 's.stupnikov@corp.mail.ru'}} if DEBUG else students
     for name, info in students.items():
         name_utf = name.encode('utf-8')
-        ans = raw_input('Test this student %s ? [y/N]' % name_utf)
+        ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, info['ip'], info['email']))
         if ans == 'y':
             start = datetime.datetime.now()
             log.write('Testing started for: %s' % info['ip'])
@@ -806,7 +806,7 @@ if __name__ == '__main__':
                 TestScenario(student_ip=info['ip']).start()
             except ValueError:
                 passed = False
-                
+
             if not passed:
                 for line in log.test_log:
                     print '%s: %s\n' % (line['level'], line['message'])
