@@ -31,8 +31,6 @@ class TestLog(object):
         # print message
         self.test_log.append({'message': message, 'level': level})
 
-log = TestLog()
-
 class TestError(object):
     message_for_code = {
         1: 'Error on HTTP request',
@@ -50,6 +48,7 @@ class TestError(object):
 
 docs = {}
 TESTS = {}
+log = None
 class Actor(object):
     # 0 - OK
     # 1 - error
@@ -568,6 +567,11 @@ class TestScenario(object):
         return container[obj_id]
 
     def __init__(self, student_ip):
+        TestScenario.forums.clear()
+        TestScenario.posts.clear()
+        TestScenario.threads.clear()
+        TestScenario.users.clear()          
+
         self.forum_actor = ForumActor(student_ip)
         self.post_actor = PostActor(student_ip)
         self.thread_actor = ThreadActor(student_ip)
@@ -575,6 +579,11 @@ class TestScenario(object):
         self.test_conf = constants.TEST_CONF
 
     def start(self):
+        log.write('Clear all')
+        try:
+            tools.Request('http://%s/db/api/clear' % student_ip, {}, post=True).get_response()
+        except Exception, e:
+            pass  
         log.write('Let there be users.')
         self.register_users()
         log.write('Let there be content')
@@ -795,12 +804,14 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     DEBUG = options.is_debug_mode
     students  = {u'Иван Иванов': {'ip': u'127.0.0.1:5000', 'email': u's.stupnikov@corp.mail.ru'}} if DEBUG else students
-    for name, info in students.items():
+    for name, info in sorted(students.items(), key=lambda t: t[0]):
         name_utf = name.encode('utf-8')
         info['ip'] = info['ip'].encode('utf-8')
         info['email'] = info['email'].encode('utf-8')
         ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, info['ip'], info['email']))
         if ans == 'y':
+            TESTS = {}
+            log = TestLog()
             start = datetime.datetime.now()
             log.write('Testing started for: %s' % info['ip'])
             passed = True
