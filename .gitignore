@@ -1,5 +1,6 @@
 tools_testing.conf
 students.py
+student_groups.py
 
 *.py[cod]
 
