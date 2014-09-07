@@ -19,16 +19,26 @@ Mark one user as folowing other user
    ```str``` followee email
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/follow/ with **{'follower': 'example@mail.ru', 'followee': 'example3@mail.ru'}**:
+Requesting http://some.host.ru/db/api/user/follow/ with *{"follower": "example@mail.ru", "followee": "example3@mail.ru"}*:
 ```json
-{u'code': 0,
- u'response': {u'about': u'hello im user1',
-               u'email': u'example@mail.ru',
-               u'followers': [u'example3@mail.ru'],
-               u'following': [u'example3@mail.ru'],
-               u'id': 791,
-               u'isAnonymous': False,
-               u'name': u'John',
-               u'subscriptions': [297],
-               u'username': u'user1'}}
+{
+    "code": 0,
+    "response": {
+        "about": "hello im user1",
+        "email": "example@mail.ru",
+        "followers": [
+            "example3@mail.ru"
+        ],
+        "following": [
+            "example3@mail.ru"
+        ],
+        "id": 1,
+        "isAnonymous": false,
+        "name": "John",
+        "subscriptions": [
+            4
+        ],
+        "username": "user1"
+    }
+}
 ```

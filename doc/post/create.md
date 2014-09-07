@@ -47,18 +47,23 @@ Create new post
    ```str``` forum short_name
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/create/ with **{'isApproved': True, 'user': 'example2@mail.ru', 'date': '2014-01-01 00:00:01', 'message': 'my message 1', 'isSpam': False, 'isHighlighted': True, 'thread': 297, 'forum': 'forumwithsufficientlylargename', 'isDeleted': False, 'isEdited': True}**:
+Requesting http://some.host.ru/db/api/post/create/ with *{"isApproved": true, "user": "example@mail.ru", "date": "2014-01-01 00:00:01", "message": "my message 1", "isSpam": false, "isHighlighted": true, "thread": 4, "forum": "forum2", "isDeleted": false, "isEdited": true}*:
 ```json
-{u'code': 0,
- u'response': {u'date': u'2014-01-01 00:00:01',
-               u'forum': u'forumwithsufficientlylargename',
-               u'id': 881,
-               u'isApproved': True,
-               u'isDeleted': False,
-               u'isEdited': True,
-               u'isHighlighted': True,
-               u'isSpam': False,
-               u'message': u'my message 1',
-               u'thread': 297,
-               u'user': u'example2@mail.ru'}}
+{
+    "code": 0,
+    "response": {
+        "date": "2014-01-01 00:00:01",
+        "forum": "forum2",
+        "id": 1,
+        "isApproved": true,
+        "isDeleted": false,
+        "isEdited": true,
+        "isHighlighted": true,
+        "isSpam": false,
+        "message": "my message 1",
+        "parent": null,
+        "thread": 4,
+        "user": "example@mail.ru"
+    }
+}
 ```

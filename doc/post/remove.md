@@ -16,7 +16,12 @@ Mark post as removed
    ```int``` post id
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/remove/ with **{'post': 18}**:
+Requesting http://some.host.ru/db/api/post/remove/ with *{"post": 3}*:
 ```json
-{u'code': 0, u'response': {u'post': 18}}
+{
+    "code": 0,
+    "response": {
+        "post": 3
+    }
+}
 ```

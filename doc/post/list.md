@@ -28,22 +28,45 @@ OR
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/post/list/ with **{'since': '2014-01-02 00:00:00', 'limit': 2, 'order': 'asc', 'forum': 'forumwithsufficientlylargename'}**:
+Requesting http://some.host.ru/db/api/post/list/?since=2014-01-01+00%3A00%3A00&order=desc&forum=forum1:
 ```json
-{u'code': 0,
- u'response': [{u'date': u'2014-01-02 00:02:01',
-                u'dislikes': 0,
-                u'forum': u'forumwithsufficientlylargename',
-                u'id': 315,
-                u'isApproved': False,
-                u'isDeleted': False,
-                u'isEdited': True,
-                u'isHighlighted': False,
-                u'isSpam': True,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': 32,
-                u'points': 0,
-                u'thread': 297,
-                u'user': u'richard.nixon@example.com'}]}
+{
+    "code": 0,
+    "response": [
+        {
+            "date": "2014-01-03 00:08:01",
+            "dislikes": 0,
+            "forum": "forum1",
+            "id": 5,
+            "isApproved": false,
+            "isDeleted": true,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": 0,
+            "thread": 3,
+            "user": "richard.nixon@example.com"
+        },
+        {
+            "date": "2014-01-03 00:01:01",
+            "dislikes": 0,
+            "forum": "forum1",
+            "id": 4,
+            "isApproved": true,
+            "isDeleted": false,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": 0,
+            "thread": 3,
+            "user": "example@mail.ru"
+        }
+    ]
+}
 ```

@@ -16,7 +16,12 @@ Mark thread as removed
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/remove/ with **{'thread': 504}**:
+Requesting http://some.host.ru/db/api/thread/remove/ with *{"thread": 1}*:
 ```json
-{u'code': 0, u'response': {u'thread': 504}}
+{
+    "code": 0,
+    "response": {
+        "thread": 1
+    }
+}
 ```

@@ -17,17 +17,25 @@ Get forum details
    ```str``` forum short_name
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/forum/details/ with **{'related': ['user'], 'forum': 'forum3'}**:
+Requesting http://some.host.ru/db/api/forum/details/?related=user&forum=forum3:
 ```json
-{u'code': 0,
- u'response': {u'id': 681,
-               u'name': u'\u0424\u043e\u0440\u0443\u043c \u0422\u0440\u0438',
-               u'short_name': u'forum3',
-               u'user': {u'email': u'richard.nixon@example.com',
-                         u'followers': [],
-                         u'following': [],
-                         u'id': 121,
-                         u'isAnonymous': True,
-                         u'name': None,
-                         u'subscriptions': []}}}
+{
+    "code": 0,
+    "response": {
+        "id": 4,
+        "name": "\u0424\u043e\u0440\u0443\u043c \u0422\u0440\u0438",
+        "short_name": "forum3",
+        "user": {
+            "about": "hello im user2",
+            "email": "example2@mail.ru",
+            "followers": [],
+            "following": [],
+            "id": 3,
+            "isAnonymous": false,
+            "name": "Jey",
+            "subscriptions": [],
+            "username": "user2"
+        }
+    }
+}
 ```

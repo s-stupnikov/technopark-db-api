@@ -23,16 +23,29 @@ Get followers of this user
    ```str``` user email
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/listFollowers/ with **{'limit': 3, 'user': 'example3@mail.ru', 'since_id': 2, 'order': 'desc'}**:
+Requesting http://some.host.ru/db/api/user/listFollowers/?user=example%40mail.ru&order=asc:
 ```json
-{u'code': 0,
- u'response': [{u'about': u'hello im user1',
-                u'email': u'example@mail.ru',
-                u'followers': [u'example3@mail.ru'],
-                u'following': [u'example3@mail.ru'],
-                u'id': 791,
-                u'isAnonymous': False,
-                u'name': u'John',
-                u'subscriptions': [297],
-                u'username': u'user1'}]}
+{
+    "code": 0,
+    "response": [
+        {
+            "about": "Wowowowow!!!",
+            "email": "example3@mail.ru",
+            "followers": [
+                "example@mail.ru"
+            ],
+            "following": [
+                "example@mail.ru"
+            ],
+            "id": 4,
+            "isAnonymous": false,
+            "name": "NewName2",
+            "subscriptions": [
+                3,
+                1
+            ],
+            "username": "user3"
+        }
+    ]
+}
 ```

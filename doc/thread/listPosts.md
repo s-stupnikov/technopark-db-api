@@ -23,37 +23,45 @@ Get posts from this thread
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/listPosts/ with **{'since': '2014-01-01 00:00:00', 'order': 'desc', 'thread': 348}**:
+Requesting http://some.host.ru/db/api/thread/listPosts/?since=2014-01-02+00%3A00%3A00&limit=2&order=asc&thread=3:
 ```json
-{u'code': 0,
- u'response': [{u'date': u'2014-01-03 00:08:01',
-                u'dislikes': 0,
-                u'forum': u'forum2',
-                u'id': 487,
-                u'isApproved': False,
-                u'isDeleted': True,
-                u'isEdited': False,
-                u'isHighlighted': False,
-                u'isSpam': False,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': None,
-                u'points': 0,
-                u'thread': 348,
-                u'user': u'richard.nixon@example.com'},
-               {u'date': u'2014-01-03 00:01:01',
-                u'dislikes': 0,
-                u'forum': u'forum2',
-                u'id': 18,
-                u'isApproved': True,
-                u'isDeleted': False,
-                u'isEdited': False,
-                u'isHighlighted': False,
-                u'isSpam': False,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': None,
-                u'points': 0,
-                u'thread': 348,
-                u'user': u'example4@mail.ru'}]}
+{
+    "code": 0,
+    "response": [
+        {
+            "date": "2014-01-03 00:01:01",
+            "dislikes": 0,
+            "forum": "forum1",
+            "id": 4,
+            "isApproved": true,
+            "isDeleted": false,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": 0,
+            "thread": 3,
+            "user": "example@mail.ru"
+        },
+        {
+            "date": "2014-01-03 00:08:01",
+            "dislikes": 1,
+            "forum": "forum1",
+            "id": 5,
+            "isApproved": false,
+            "isDeleted": true,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": -1,
+            "thread": 3,
+            "user": "richard.nixon@example.com"
+        }
+    ]
+}
 ```

@@ -23,22 +23,45 @@ Get posts from this user
    ```str``` user email
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/user/listPosts/ with **{'since': '2014-01-01 00:00:00', 'user': 'example2@mail.ru', 'order': 'asc'}**:
+Requesting http://some.host.ru/db/api/user/listPosts/?since=2014-01-02+00%3A00%3A00&limit=2&user=example%40mail.ru&order=asc:
 ```json
-{u'code': 0,
- u'response': [{u'date': u'2014-01-01 00:00:01',
-                u'dislikes': 1,
-                u'forum': u'forumwithsufficientlylargename',
-                u'id': 881,
-                u'isApproved': True,
-                u'isDeleted': False,
-                u'isEdited': True,
-                u'isHighlighted': True,
-                u'isSpam': False,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': None,
-                u'points': -1,
-                u'thread': 297,
-                u'user': u'example2@mail.ru'}]}
+{
+    "code": 0,
+    "response": [
+        {
+            "date": "2014-01-02 00:02:01",
+            "dislikes": 0,
+            "forum": "forum2",
+            "id": 3,
+            "isApproved": false,
+            "isDeleted": false,
+            "isEdited": true,
+            "isHighlighted": false,
+            "isSpam": true,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": 2,
+            "points": 0,
+            "thread": 4,
+            "user": "example@mail.ru"
+        },
+        {
+            "date": "2014-01-03 00:01:01",
+            "dislikes": 0,
+            "forum": "forum1",
+            "id": 4,
+            "isApproved": true,
+            "isDeleted": false,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": 0,
+            "thread": 3,
+            "user": "example@mail.ru"
+        }
+    ]
+}
 ```

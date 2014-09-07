@@ -6,6 +6,7 @@ import json
 import time
 import pprint
 import random
+import requests
 import urlparse
 import datetime
 from optparse import OptionParser
@@ -86,15 +87,20 @@ class Actor(object):
         entity_method = path_parts[1]
         path = os.path.join('../doc', entity_name, entity_method + '.md')
         response = {u'code': 0, u'response': response}
+        if method == 'GET':
+            url = requests.Request("GET", url.replace('127.0.0.1:5000', 'some.host.ru'), params=query_dict).prepare().url
+        else:
+            url = url.replace('127.0.0.1:5000', 'some.host.ru')
         context = {
             'entity_name': entity_name,
             'entity_method': entity_method,
             'method': method,
             'requried': set(),
             'optional': set(),
-            'response': pprint.pformat(response),
-            'url': url.replace('127.0.0.1:5000', 'some.host.ru'),
-            'params': str(query_dict),
+            'formats': "\n##Supported formats\n* json\n" if method == "POST" else '',
+            'response': json.dumps(response, sort_keys=True, indent=4, separators=(',', ': ')),
+            'url': url,
+            'params': ' with *%s*' % json.dumps(query_dict) if method == "POST" else '',
         }
         for k in query_dict:
             context[get_arg_type(k)].add(k)
@@ -848,4 +854,4 @@ if __name__ == '__main__':
             # produce_docs()
             # m.collection.update({'student_ip': student_ip}, {'$push': {'tests': record}})
             # m.insert(record)
-    
+            

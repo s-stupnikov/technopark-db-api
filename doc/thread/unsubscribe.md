@@ -19,7 +19,13 @@ Unsubscribe user from this thread
    ```int``` thread id of this post
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/thread/unsubscribe/ with **{'user': 'example@mail.ru', 'thread': 504}**:
+Requesting http://some.host.ru/db/api/thread/unsubscribe/ with *{"user": "example4@mail.ru", "thread": 1}*:
 ```json
-{u'code': 0, u'response': {u'thread': 504, u'user': u'example@mail.ru'}}
+{
+    "code": 0,
+    "response": {
+        "thread": 1,
+        "user": "example4@mail.ru"
+    }
+}
 ```

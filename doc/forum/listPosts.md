@@ -26,34 +26,83 @@ Get posts from this forum
    ```str``` forum short_name
 
 
-Requesting http://some.host.ru/db/api/s.stupnikov/forum/listPosts/ with **{'related': ['thread'], 'since': '2014-01-02 00:00:00', 'limit': 2, 'order': 'asc', 'forum': 'forumwithsufficientlylargename'}**:
+Requesting http://some.host.ru/db/api/forum/listPosts/?related=thread&related=forum&since=2014-01-01+00%3A00%3A00&order=desc&forum=forum1:
 ```json
-{u'code': 0,
- u'response': [{u'date': u'2014-01-02 00:02:01',
-                u'dislikes': 0,
-                u'forum': u'forumwithsufficientlylargename',
-                u'id': 315,
-                u'isApproved': False,
-                u'isDeleted': False,
-                u'isEdited': True,
-                u'isHighlighted': False,
-                u'isSpam': True,
-                u'likes': 0,
-                u'message': u'my message 1',
-                u'parent': 32,
-                u'points': 0,
-                u'thread': {u'date': u'2013-12-31 00:01:01',
-                            u'dislikes': 0,
-                            u'forum': u'forumwithsufficientlylargename',
-                            u'id': 297,
-                            u'isClosed': False,
-                            u'isDeleted': False,
-                            u'likes': 0,
-                            u'message': u'hey!',
-                            u'points': 0,
-                            u'posts': 3,
-                            u'slug': u'thread1',
-                            u'title': u'Thread I',
-                            u'user': u'example4@mail.ru'},
-                u'user': u'richard.nixon@example.com'}]}
+{
+    "code": 0,
+    "response": [
+        {
+            "date": "2014-01-03 00:08:01",
+            "dislikes": 0,
+            "forum": {
+                "id": 2,
+                "name": "Forum I",
+                "short_name": "forum1",
+                "user": "example3@mail.ru"
+            },
+            "id": 5,
+            "isApproved": false,
+            "isDeleted": true,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": 0,
+            "thread": {
+                "date": "2013-12-30 00:01:01",
+                "dislikes": 0,
+                "forum": "forum1",
+                "id": 3,
+                "isClosed": false,
+                "isDeleted": false,
+                "likes": 0,
+                "message": "hey hey!",
+                "points": 0,
+                "posts": 2,
+                "slug": "thread2",
+                "title": "Thread II",
+                "user": "example3@mail.ru"
+            },
+            "user": "richard.nixon@example.com"
+        },
+        {
+            "date": "2014-01-03 00:01:01",
+            "dislikes": 0,
+            "forum": {
+                "id": 2,
+                "name": "Forum I",
+                "short_name": "forum1",
+                "user": "example3@mail.ru"
+            },
+            "id": 4,
+            "isApproved": true,
+            "isDeleted": false,
+            "isEdited": false,
+            "isHighlighted": false,
+            "isSpam": false,
+            "likes": 0,
+            "message": "my message 1",
+            "parent": null,
+            "points": 0,
+            "thread": {
+                "date": "2013-12-30 00:01:01",
+                "dislikes": 0,
+                "forum": "forum1",
+                "id": 3,
+                "isClosed": false,
+                "isDeleted": false,
+                "likes": 0,
+                "message": "hey hey!",
+                "points": 0,
+                "posts": 2,
+                "slug": "thread2",
+                "title": "Thread II",
+                "user": "example3@mail.ru"
+            },
+            "user": "example@mail.ru"
+        }
+    ]
+}
 ```

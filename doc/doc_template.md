@@ -3,16 +3,13 @@
 
 ## Supported request methods 
 * %(method)s
-
-##Supported formats
-* json
-
+%(formats)s
 ##Arguments
 %(optional)s
 
 %(requried)s
 
-Requesting %(url)s with **%(params)s**:
+Requesting %(url)s%(params)s:
 ```json
 %(response)s
 ```
