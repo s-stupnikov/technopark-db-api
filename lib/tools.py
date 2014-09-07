@@ -1,7 +1,6 @@
 import json
-import urllib
-import urllib2
 import smtplib
+import requests
 import urlparse
 import unittest
 import ConfigParser
@@ -27,27 +26,25 @@ class Request(object):
         self.url = url
         if not isinstance(query_args, dict):
             raise TypeError('Request.query_args must be dict')
-        self.query_args = query_args
-        self.post = post
-        self.request = urllib2.Request(self.url, headers={'Content-Type': 'application/json'})
-        self._add_params()
+        self.headers = {'Content-Type': 'application/json'} if post else {}
+        self.method = requests.post if post else requests.get
+        self.payload = {"data": json.dumps(query_args)} if post else {"params": query_args}
 
     def get_response(self):
         try:
-            handler = urllib2.urlopen(self.request)
+            r = self.method(self.url, timeout=5, headers=self.headers, **self.payload)
         except Exception, e:
             raise ValueError('HTTP error: %s' % str(e))
-        if handler.getcode() >= 300:
-            raise ValueError('Request %s return code not 2xx' % self.request)
-        response = handler.read()
+        if r.status_code >= 300:
+            raise ValueError('Request %s return code not 2xx: %s' % (r.url, r.status_code))
         try:
-            response = json.loads(response)
+            response = r.json()
         except:
             raise ValueError('Not json response')
         if not response:
             raise ValueError('Empty response')
-        # if 'response' not in response or 'code' not in response:
-        #     raise ValueError('Bad response body: response or code attribute is missing')
+        if 'response' not in response or 'code' not in response:
+            raise ValueError('Bad response body: response or code attribute is missing')
         # if response['code'] != 0:
         #     raise ValueError('Bad response code: %s' % str(response['code']))
         if 'response' in response:
@@ -55,22 +52,10 @@ class Request(object):
         return response
 
 
-    def _add_params(self):
-        if not self.post:
-            url_parts = list(urlparse.urlparse(self.url))
-            current_query_args = urlparse.parse_qsl(url_parts[4])
-            self.query_args.update(current_query_args)
-            url_parts[4] = urllib.urlencode(self.query_args)
-            self.url = urlparse.urlunparse(url_parts)
-            self.request = urllib2.Request(self.url)
-        else:
-            self.request.add_data(json.dumps(self.query_args))
-
-
 class mongodb(object):
     def __init__(self, collection):
         client = MongoClient()
-        db = client['database_course']
+        db = client['db_course']
         self.collection = db[collection]
 
     def save(self, data):
@@ -112,18 +97,18 @@ class Database(object):
         return self.dictfetchall(cursor)
 
 def sendemail(to_addr_list, subject, message):
-    from_addr = 'st.stupnikov@gmail.com'
-    header  = 'From: %s\n' % from_addr
+    mail_settings = Configuration('/usr/local/etc/test.conf').get_section('mail')
+    sender = mail_settings['login']
+    header  = 'From: %s\n' % sender
     header += 'To: %s\n' % ','.join(to_addr_list)
     header += 'Subject: %s\n\n' % subject
     message = header + message
 
-    google_smtp = 'smtp.gmail.com:587'
-    mail_settings = Configuration('/usr/local/etc/test.conf').get_section('mail')
-    server = smtplib.SMTP(google_smtp)
-    server.starttls()
-    server.login(mail_settings['login'], mail_settings['password'])
-    problems = server.sendmail(from_addr, to_addr_list, message)
+    smtp_serv = 'smtp.mail.ru'
+    smtp_port = 465
+    server = smtplib.SMTP_SSL(smtp_serv, smtp_port)
+    server.login(sender, mail_settings['password'])
+    problems = server.sendmail(sender, to_addr_list, message)
     server.quit()
 
 

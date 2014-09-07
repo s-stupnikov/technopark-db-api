@@ -567,6 +567,7 @@ class TestScenario(object):
         return container[obj_id]
 
     def __init__(self, student_ip):
+        self.student_ip = student_ip
         TestScenario.forums.clear()
         TestScenario.posts.clear()
         TestScenario.threads.clear()
@@ -581,7 +582,7 @@ class TestScenario(object):
     def start(self):
         log.write('Clear all')
         try:
-            tools.Request('http://%s/db/api/clear' % student_ip, {}, post=True).get_response()
+            tools.Request('http://%s/db/api/clear' % self.student_ip, {}, post=True).get_response()
         except Exception, e:
             pass  
         log.write('Let there be users.')

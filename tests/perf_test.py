@@ -67,7 +67,7 @@ class Facter(object):
 
     @property
     def message(self):
-        return self.get_new_sentance(5, 20)
+        return self.get_new_sentance(20, 30)
 
     @property
     def email(self):
@@ -281,7 +281,7 @@ class Thread(ForumEntity):
 class Post(ForumEntity):
     def create(self, fill=False):
         params = {
-            'message' : facter.message,
+            # 'message' : facter.message,
             'isApproved' : facter.bool,
             'isSpam' : facter.bool,
             'isDeleted' : facter.bool,
@@ -290,7 +290,7 @@ class Post(ForumEntity):
             'date' : facter.date,
         }
         location = '/%s/create/' % self.type
-
+        params['message'] = ' '.join([facter.message for i in range(100)])
         params['thread'] = random.choice(state.threads)
         params['user'] = random.choice(state.users)
         params['forum'] = state.forum_for_thread[params['thread']]
