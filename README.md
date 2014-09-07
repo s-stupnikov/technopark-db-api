@@ -47,6 +47,9 @@ technopark-db-api
 
 #API Documentation
 
+##Общие
+* [clear](./doc/clear.md)
+
 ##Forum
 * [create](./doc/forum/create.md)
 * [details](./doc/forum/details.md)

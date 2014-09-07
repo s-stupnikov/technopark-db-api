@@ -47,7 +47,6 @@ class TestError(object):
             sys.exit(0)        
 
 docs = {}
-TESTS = {}
 log = None
 class Actor(object):
     # 0 - OK
@@ -71,8 +70,12 @@ class Actor(object):
             log.write('Request time was: %.4f sec' % req_time)
         except ValueError, e:
             log.write('Request error: %s' % str(e), level='error')
-            log.write('Exiting', level='error')
-            raise ValueError
+            location = self.url_prefix.split('/')[-1] + '/' + url_suffix
+            if 'details' not in location:
+                TESTS[location] = False
+            # log.write('Exiting', level='error')
+            # raise ValueError
+            response = {}
         return response
 
     def doc(self, url, query_dict, method, response):
@@ -169,10 +172,11 @@ class Actor(object):
         if related is None:
             related = []
         api_obj = self.details(obj=test_obj, related=related)
-        if test_obj != api_obj:
+        try:
+            if test_obj != api_obj:
+                TESTS[location] = False
+        except:
             TESTS[location] = False
-            # raise ValueError
-            # return False
         if TESTS.get(location, True):
             TESTS[location] = True
         return True
@@ -182,10 +186,11 @@ class Actor(object):
         log.write('Validating by requesting list of objects')
         if len(api_obj_list) == len(test_obj_list):
             for test_obj, api_obj in zip(test_obj_list, api_obj_list):
-                if test_obj != api_obj:
+                try:
+                    if test_obj != api_obj:
+                        TESTS[location] = False
+                except:
                     TESTS[location] = False
-                    # raise ValueError
-                    # return False
         else:
             TESTS[location] = False
             log.write('len(api objects list) != len(test object list): %d != %d' % (len(api_obj_list), len(test_obj_list)), level='error')
@@ -585,20 +590,18 @@ class TestScenario(object):
             tools.Request('http://%s/db/api/clear' % self.student_ip, {}, post=True).get_response()
         except Exception, e:
             pass  
-        log.write('Let there be users.')
-        self.register_users()
-        log.write('Let there be content')
-        self.create_content()
-        self.test_forums()
-        self.test_posts()
-        self.test_threads()
-        self.test_users()
+    
+        for action in (self.register_users, self.create_content, self.test_forums, \
+                       self.test_posts, self.test_threads, self.test_users):
+            action()
 
     def register_users(self):
+        log.write('Let there be users.')
         for u in self.test_conf['users']:
             self.user_actor.create(u)
 
     def create_content(self):
+        log.write('Let there be content')
         for f in self.test_conf['forums']:
             f['user'] = random.choice(self.users.keys())
             self.forum_actor.create(f)
