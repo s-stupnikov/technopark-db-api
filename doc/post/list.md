@@ -12,6 +12,9 @@ List posts
 * limit
 
    ```int``` return limit
+* sort
+  
+   ```str``` sort type. Possible values: ```['flat', 'tree', 'parent_tree']```. Default: []
 * order
 
    ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
