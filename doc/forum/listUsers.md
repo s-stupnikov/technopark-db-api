@@ -4,9 +4,6 @@ Get user with posts on this forum
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * limit

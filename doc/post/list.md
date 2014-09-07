@@ -4,9 +4,6 @@ List posts
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * since

@@ -4,9 +4,6 @@ Get posts from this forum
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * since

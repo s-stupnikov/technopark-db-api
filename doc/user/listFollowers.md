@@ -4,9 +4,6 @@ Get followers of this user
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * limit

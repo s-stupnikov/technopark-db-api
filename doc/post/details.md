@@ -4,9 +4,6 @@ Get post details
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * related

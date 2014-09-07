@@ -4,9 +4,6 @@ List threads
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * since

@@ -4,9 +4,6 @@ Get user details
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 
 

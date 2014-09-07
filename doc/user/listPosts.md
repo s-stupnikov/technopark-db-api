@@ -4,9 +4,6 @@ Get posts from this user
 ## Supported request methods 
 * GET
 
-##Supported formats
-* json
-
 ##Arguments
 ###Optional
 * since
