@@ -19,6 +19,8 @@ class Configuration(object):
     def get_section(self, section):
         if self.config.has_section(section):
             return dict((k, v) for k, v in self.config.items(section))
+        else:
+            raise ValueError("Config at %s has not section %s" % (config_path, section))
 
 
 class Request(object):

@@ -9,6 +9,7 @@ import random
 import requests
 import urlparse
 import datetime
+import itertools
 from optparse import OptionParser
 
 import func_test_constants as constants
@@ -17,20 +18,22 @@ sys.path.append('../doc')
 
 import tools
 from doc_conf import DISCR
-from students import students
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
 settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
 
 class TestLog(object):
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.test_log = []
+        self.verbose = verbose
 
     def write(self, message, level='info'):
         time = datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S] ')
         msg = time + message
-        # print message
+        if self.verbose:
+            print message
         self.test_log.append({'message': message, 'level': level})
+
 
 class TestError(object):
     message_for_code = {
@@ -47,6 +50,7 @@ class TestError(object):
         if exit:
             sys.exit(0)        
 
+
 docs = {}
 log = None
 class Actor(object):
@@ -62,7 +66,7 @@ class Actor(object):
         if 'details' not  in url_suffix:
             self.url_suffix = url_suffix
         method = 'POST' if post else 'GET'
-        log.write('Requesting %s with %s (%s)' % (url, str(query_dict), method))
+        log.write('Requesting %s with %s (%s)' % (url, repr(query_dict), method))
         try:
             start = time.time()
             response = tools.Request(url, query_dict, post).get_response()
@@ -143,7 +147,7 @@ class Actor(object):
             thread = TestScenario.get_obj(obj_type='thread', obj_id=test_obj.thread)
             thread.posts += 1
 
-    def create(self, query_dict):
+    def create(self, query_dict, plain=False):
         related_for_type = {
             'thread': ['forum', 'user'],
             'forum': ['user'],
@@ -151,6 +155,8 @@ class Actor(object):
         }
         url_suffix = 'create'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
+        if plain:
+            return response
         api_obj = self._create_from_dict(response)        
         test_obj = self._create_from_dict(query_dict)
         test_obj.id = api_obj.id if hasattr(api_obj, 'id') else -1
@@ -158,7 +164,7 @@ class Actor(object):
         self.validate_single(test_obj, related=related_for_type.get(test_obj.type))
         return test_obj
 
-    def details(self, obj, related):
+    def details(self, obj, related, plain=False):
         url_suffix = 'details'
         query_dict = {
             obj.type: obj.unique_id,
@@ -166,45 +172,46 @@ class Actor(object):
         if related: query_dict['related'] = related
 
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
+        if plain:
+            return response
         obj = self._create_from_dict(response)        
         return obj
 
     def _get_api_location(self):
         return self.url_prefix.split('/')[-1] + '/' + self.url_suffix
 
-    def validate_single(self, test_obj, related=None):
+    def validate_single(self, test_obj, related=None, only_check=False):
         location = self._get_api_location()
         log.write('Validating by requesting object details')
         if related is None:
             related = []
         api_obj = self.details(obj=test_obj, related=related)
         try:
-            if test_obj != api_obj:
-                TESTS[location] = False
-        except:
-            TESTS[location] = False
-        if TESTS.get(location, True):
-            TESTS[location] = True
-        return True
+            is_valid = test_obj == api_obj
+        except Exception, e:
+            log.write('Validation error: %s' % e, level='error')
+            is_valid = False
+        if (location not in TESTS or TESTS.get(location) != False) and not only_check:
+            TESTS[location] = is_valid
+        return is_valid
 
     def validate_list(self, test_obj_list, api_obj_list):
         location = self._get_api_location()
         log.write('Validating by requesting list of objects')
         if len(api_obj_list) == len(test_obj_list):
-            for test_obj, api_obj in zip(test_obj_list, api_obj_list):
+            for test_obj, api_obj in itertools.izip_longest(test_obj_list, api_obj_list):
                 try:
                     if test_obj != api_obj:
                         TESTS[location] = False
-                except:
+                except Exception, e:
+                    log.write('Validation error: %s' % e, level='error')
                     TESTS[location] = False
         else:
             TESTS[location] = False
             log.write('len(api objects list) != len(test object list): %d != %d' % (len(api_obj_list), len(test_obj_list)), level='error')
-            # raise ValueError
-            # return False
         if TESTS.get(location, True):
             TESTS[location] = True
-        return True
+        return TESTS.get(location)
 
 
 class ForumActor(Actor):
@@ -248,17 +255,33 @@ class ThreadActor(Actor):
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
         return self.validate_single(thread)
 
-    def remove(self, query_dict, thread):
+    def remove(self, query_dict, thread, thread_posts):
         thread.isDeleted = True
+        for p in thread_posts:
+            p.isDeleted = True
         url_suffix = 'remove'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
-        return self.validate_single(thread)
+        is_thread_valid = self.validate_single(thread)
+        location = self._get_api_location()
+        list_posts_validity = TESTS.get('thread/listPosts')
+        query_dict['order'] = 'desc'
+        TESTS[location] = self.list_posts(query_dict, thread_posts) and is_thread_valid
+        TESTS['thread/listPosts'] = True if list_posts_validity else False
+        return TESTS[location]
 
-    def restore(self, query_dict, thread):
+    def restore(self, query_dict, thread, thread_posts):
         thread.isDeleted = False
+        for p in thread_posts:
+            p.isDeleted = False
         url_suffix = 'restore'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
-        return self.validate_single(thread)
+        is_thread_valid = self.validate_single(thread)
+        location = self._get_api_location()
+        list_posts_validity = TESTS.get('thread/listPosts')
+        query_dict['order'] = 'desc'
+        TESTS[location] = self.list_posts(query_dict, thread_posts) and is_thread_valid
+        TESTS['thread/listPosts'] = True if list_posts_validity else False
+        return TESTS[location]
 
     def subscribe(self, query_dict, thread):
         user = TestScenario.get_obj(obj_type='user', obj_id=query_dict['user'])
@@ -306,15 +329,25 @@ class PostActor(Actor):
 
     def remove(self, query_dict, post):
         post.isDeleted = True
+        thread = TestScenario.threads[post.thread]
+        thread.posts -= 1
         url_suffix = 'remove'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
-        return self.validate_single(post)
+        is_post_valid = self.validate_single(post)
+        location = self._get_api_location()
+        TESTS[location] = testsuite.thread_actor.validate_single(thread, only_check=True) and is_post_valid
+        return TESTS[location]
 
     def restore(self, query_dict, post):
         post.isDeleted = False
+        thread = TestScenario.threads[post.thread]
+        thread.posts += 1
         url_suffix = 'restore'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
-        return self.validate_single(post)
+        is_post_valid = self.validate_single(post)
+        location = self._get_api_location()
+        TESTS[location] = testsuite.thread_actor.validate_single(thread, only_check=True) and is_post_valid
+        return TESTS[location]
 
     def update(self, query_dict, post):
         post.message = query_dict['message']
@@ -407,6 +440,18 @@ class ForumEntity(object):
         id_attr = id_attr_for_type[cls]
         return getattr(self, id_attr)
 
+    @property
+    def sort_field(self):
+        sort_field_for_type = {
+            'thread': 'date',
+            'post': 'date',
+            'user': 'name',
+        }
+        cls = self.type
+        field = sort_field_for_type[cls]
+        return getattr(self, field)
+
+
     def __cmp__(self, obj):
         cls_for_attr = {
             'forum': Forum,
@@ -421,7 +466,7 @@ class ForumEntity(object):
                 if attr in ao_dict:
                     if isinstance(ao_dict[attr], dict) or isinstance(to_dict[attr], dict):
                         if not isinstance(ao_dict[attr], dict):
-                            log.write('No <%s> related in response from API: [%s]' % (attr, str(ao_dict)), level='error')
+                            log.write('No <%s> related in response from API: [%s]' % (attr, repr(ao_dict)), level='error')
                             return -1
                         cls = cls_for_attr[attr]
                         related_ao = cls(**ao_dict[attr])
@@ -433,17 +478,16 @@ class ForumEntity(object):
                         if isinstance(to_dict[attr], (str, unicode, int)):
                             related_to = TestScenario.get_eq_obj(related_ao)
                         if related_to != related_ao:
-                            log.write('Related <%s> from API response [%s] dont match test object [%s]' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
-                            # raise ValueError
+                            log.write('Related <%s> from API response [%s] dont match test object [%s]' % (attr, repr(ao_dict.get(attr)), repr(to_dict[attr])), level='error')
                             return -1
                     if isinstance(to_dict[attr], (set,list)) and isinstance(ao_dict[attr], (set, list)):
                         to_dict[attr] = set(to_dict[attr])
                         ao_dict[attr] = set(ao_dict[attr])
                     if to_dict[attr] != ao_dict[attr]:
-                        log.write('Attribute <%s> from API response (value=%s) dont match test object (value=%s)' % (attr, str(ao_dict.get(attr)), str(to_dict[attr])), level='error')
+                        log.write('Attribute <%s> from API response (value=%s) dont match test object (value=%s)' % (attr, repr(ao_dict.get(attr)), repr(to_dict[attr])), level='error')
                         return -1
                 else:
-                    log.write('Attribute <%s> missing in response from API: %s' % (attr, str(ao_dict.get(attr))), level='error')
+                    log.write('Attribute <%s> missing in response from API: %s' % (attr, repr(ao_dict.get(attr))), level='error')
                     return -1
             else:
                 return 0
@@ -495,6 +539,8 @@ class EntitiesList(object):
             self.order_by()
         if 'limit' in kwargs:
             self.limit(kwargs['limit'])
+        if 'sort' in kwargs:
+            self.sort(kwargs['sort'])
 
     def filter_by_attr(self, attr, value):
         objects = self.objects[:]
@@ -543,11 +589,28 @@ class EntitiesList(object):
                 get_datetime = lambda obj: datetime.datetime.strptime(obj.date, '%Y-%m-%d %H:%M:%S')
                 self.objects.sort(key=get_datetime, reverse=order)
             else:
-                self.objects.sort(key=lambda obj: obj.id, reverse=order)
-
+                self.objects.sort(key=lambda obj: obj.sort_field, reverse=order)
 
     def limit(self, limit_by):
         self.objects = self.objects[:limit_by]
+
+    def sort(self, sort,order, limit):
+        sorted_objects = []
+        if sort == 'flat':
+            return self.order_by()
+        if sort == 'tree':
+            self.order_by()
+            sorted_objects = []
+            posts = dict((post.unique_id, post) for post in self.objects)
+            for post in self.objects:
+                if post.parent is None:
+                    sorted_objects.append(post)
+                else:
+                    parent_post = posts[post.parent]
+                    if not hasattr(parent_post, 'childs'):
+                        parent_post.childs = []
+                    parent_post.childs.append(post.__dict__)
+            self.objects = sorted_objects
 
 
 class TestScenario(object):
@@ -597,8 +660,8 @@ class TestScenario(object):
         except Exception, e:
             pass  
     
-        for action in (self.register_users, self.create_content, self.test_forums, \
-                       self.test_posts, self.test_threads, self.test_users):
+        for action in (self.register_users, self.create_content, self.test_errors, \
+                       self.test_posts, self.test_threads, self.test_users, self.test_forums):
             action()
 
     def register_users(self):
@@ -636,6 +699,19 @@ class TestScenario(object):
             p['user'] = random.choice(self.users.keys())
             created_post = self.post_actor.create(p)
             if childs: self._setup_posts_tree(childs, parent=created_post.id, thread_id=p['thread'])
+
+    def test_errors(self):
+        post = random.choice(self.posts.values())
+        not_found_post = copy.deepcopy(post)
+        not_found_post.id = -42
+        res = self.post_actor.details(not_found_post, related=[], plain=True)
+        TESTS["errors"] = res.get("code") == 1
+        u = random.choice(self.test_conf['users'])
+        res = self.user_actor.create(u, plain=True)
+        TESTS["errors"] = TESTS["errors"] and res.get("code") == 5
+        thread = random.choice(self.threads.values())
+        res = self.thread_actor.details(thread, related=["user", "thread"], plain=True)
+        TESTS["errors"] = TESTS["errors"] and res.get("code") == 3
 
     def test_forums(self):
         # print 'TEST FORUMS'
@@ -678,7 +754,7 @@ class TestScenario(object):
             elist = EntitiesList(objects, **params)
             self.post_actor.list(params, elist.objects)
         
-        post = random.choice(self.posts.values())
+        post = random.chonot_found_post = random.choice(self.posts.values())
         log.write('Remove post')
         self.post_actor.remove({'post': post.id}, post)
         log.write('Restore post')
@@ -707,10 +783,11 @@ class TestScenario(object):
             self.thread_actor.list_posts(params, elist.objects)        
 
         thread = random.choice(self.threads.values())
+        thread_posts = EntitiesList([p for p in self.posts.values() if p.thread == thread.id], order='desc')
         log.write('Go away thread!')
-        self.thread_actor.remove({'thread': thread.id}, thread)
+        self.thread_actor.remove({'thread': thread.id}, thread, thread_posts.objects)
         log.write('Alright, I forgive you, come back')
-        self.thread_actor.restore({'thread': thread.id}, thread)
+        self.thread_actor.restore({'thread': thread.id}, thread, thread_posts.objects)
         log.write('Changed my mind again, goodbye!')
         self.thread_actor.close({'thread': thread.id}, thread)
         log.write('But I cant live without you')
@@ -807,26 +884,51 @@ def produce_docs(with_toc=False):
                 readme.write('\n')
 
 
+class Students(object):
+    filepath = "students.json"
+    def __init__(self, options):
+        if options.local:
+            self.data = {u'Я': {'ip': options.ip_port, 'email': u's.stupnikov@corp.mail.ru', 'passed': False, 'last_result': '0/28'}}
+        else:            
+            with open(self.filepath) as f:
+                self.data = json.load(f)
+    def save(self):
+        if not options.local:
+            with open(self.filepath, "w") as f:
+                json.dump(self.data, f)
+
+
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-d", "--debug", dest="is_debug_mode",
-                      action="store_true", default=False)
+    parser.add_option("-l", "--local", dest="local",
+                      action="store_true", default=False, help="run local")
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      action="store_true", default=False, help="log to stdout")
+    parser.add_option("-a", "--address", dest="ip_port",
+                      action="store", type="string", default='127.0.0.1:5000')
     (options, args) = parser.parse_args()
-    DEBUG = options.is_debug_mode
-    students  = {u'Иван Иванов': {'ip': u'127.0.0.1:5000', 'email': u's.stupnikov@corp.mail.ru'}} if DEBUG else students
-    for name, info in sorted(students.items(), key=lambda t: t[0]):
+    students = Students(options)
+    for name, student in sorted(students.data.items(), key=lambda t: t[0]):
+        if student['passed']:
+            print "%s already passed the test" % name
+            continue
         name_utf = name.encode('utf-8')
-        info['ip'] = info['ip'].encode('utf-8')
-        info['email'] = info['email'].encode('utf-8')
-        ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, info['ip'], info['email']))
+        student['ip'] = student['ip'].encode('utf-8')
+        student['email'] = student['email'].encode('utf-8')
+        if not options.local:
+            ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, student['ip'], student['email']))
+        else:
+            print 'Testing %s' % student['ip']
+            ans = 'y'
         if ans == 'y':
             TESTS = {}
-            log = TestLog()
+            log = TestLog(options.verbose)
             start = datetime.datetime.now()
-            log.write('Testing started for: %s' % info['ip'])
+            log.write('Testing started for: %s' % student['ip'])
             passed = True
             try:
-                TestScenario(student_ip=info['ip']).start()
+                testsuite = TestScenario(student_ip=student['ip'])
+                testsuite.start()
             except ValueError:
                 passed = False
 
@@ -834,24 +936,16 @@ if __name__ == '__main__':
                 for line in log.test_log:
                     print '%s: %s\n' % (line['level'], line['message'])
             pprint.pprint(TESTS)
-            passed_str = '%d/%d tests passed' % (sum(1 for t in TESTS.values() if t), len(TESTS))
-            print passed_str
-            record = {
-                'log': log.test_log,
-                'start_time': start,
-                'passed': passed,
-                'test': 'functional'
-            }
-            ans = raw_input('Send email ? [y/N]')
-            if ans == 'y':
-                log_txt = ''
-                for line in log.test_log:
-                    log_txt += '%s: %s\n' % (line['level'], line['message'])
-                message = 'RESULTS:\n' + passed_str + '\n' + pprint.pformat(TESTS) + '\n\nTEST LOG:\n' + log_txt
-                tools.sendemail(to_addr_list=(info['email'],), subject='[TP]DB API: functional test results', message=message)
-
-            # m = tools.mongodb(collection='functional_test')
-            # produce_docs()
-            # m.collection.update({'student_ip': student_ip}, {'$push': {'tests': record}})
-            # m.insert(record)
-            
+            passed_str = '%d/%d' % (sum(1 for t in TESTS.values() if t), len(TESTS))
+            print passed_str + ' tests passed'
+            student['passed'] = passed
+            student['last_result'] = passed_str
+            students.save()
+            if not options.local:
+                ans = raw_input('Send email ? [y/N]')
+                if ans == 'y':
+                    log_txt = ''
+                    for line in log.test_log:
+                        log_txt += '%s: %s\n' % (line['level'], line['message'])
+                    message = 'RESULTS:\n' + passed_str + '\n' + pprint.pformat(TESTS) + '\n\nTEST LOG:\n' + log_txt
+                    tools.sendemail(to_addr_list=(student['email'],), subject='[TP]DB API: functional test results', message=message)

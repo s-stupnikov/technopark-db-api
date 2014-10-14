@@ -50,7 +50,7 @@ THREADS = [
                 'title': u'Тред Три',
                 'slug': 'thread3',
                 'date': '2013-12-29 00:01:01',
-                'message': 'hey hey hey!',
+                'message': 'hey hey hey! ' * 300,
                 'isDeleted': False,
                 'isClosed': False,
             },
@@ -58,7 +58,7 @@ THREADS = [
 
 POSTS = [
             { 
-                'message': 'my message 1',
+                'message': 'my message 1' * 100,
                 'isApproved': True,
                 'isSpam': False,
                 'isDeleted': False,
@@ -67,7 +67,7 @@ POSTS = [
                 'date': '2014-01-01 00:00:01',
                 'childs':   [
                                 { 
-                                    'message': 'my message 3',
+                                    'message': 'my message 3' * 1000,
                                     'isApproved': False,
                                     'isSpam': False,
                                     'isDeleted': False,
@@ -89,7 +89,7 @@ POSTS = [
                             ]
             },
             { 
-                'message': 'my message 1',
+                'message': 'my message 1' * 500,
                 'isApproved': True,
                 'isSpam': False,
                 'isDeleted': False,
@@ -127,7 +127,7 @@ USERS = [
             },
             {
                 "username": "user2",
-                "about":"hello im user2",
+                "about":"hello im user2" * 300,
                 "name":"Jey",
                 "isAnonymous": False,
                 "email":"example2@mail.ru"
