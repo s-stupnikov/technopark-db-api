@@ -17,7 +17,7 @@ Get posts from this thread
    ```str``` sort type. Possible values: ```['flat', 'tree', 'parent_tree']```. Default: 'flat'
 * order
 
-   ```str``` sort order (by date). Possible values: ```['desc', 'asc']```. Default: 'desc'
+   ```str``` sort order. Possible values: ```['desc', 'asc']```. Default: 'desc'
 
 
 ###Requried
