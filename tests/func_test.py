@@ -138,7 +138,8 @@ class Actor(object):
             obj = cls(**response)
         except Exception, e:
             log.write('Cannot create <%s> object from response. Response: %s' % (cls.__name__, str(response)), level='error')
-            raise ValueError
+            # raise ValueError
+            obj = cls()
         return obj
 
     def _trigger_side_effects(self, test_obj):
@@ -662,8 +663,10 @@ class TestScenario(object):
         log.write('Clear all')
         try:
             tools.Request('http://%s/db/api/clear' % self.student_ip, {}, post=True).get_response()
+            TESTS["clear"] = True
         except Exception, e:
-            pass  
+            log.write("/clear call error: %s" % e, level='error')
+            TESTS["clear"] = False
     
         for action in (self.register_users, self.create_content, self.test_errors, \
                        self.test_posts, self.test_threads, self.test_users, self.test_forums):
@@ -786,7 +789,6 @@ class TestScenario(object):
             objects = copy.deepcopy([p for p in self.posts.values() if p.thread == thread.id]) 
             elist = EntitiesList(objects, **params)
             self.thread_actor.list_posts(params, elist.objects)        
-
         thread = random.choice(self.threads.values())
         thread_posts = EntitiesList([p for p in self.posts.values() if p.thread == thread.id], order='desc')
         log.write('Go away thread!')
@@ -937,7 +939,7 @@ if __name__ == '__main__':
             except ValueError:
                 passed = False
 
-            if not passed:
+            if not passed and not options.verbose:
                 for line in log.test_log:
                     print '%s: %s\n' % (line['level'], line['message'])
             pprint.pprint(TESTS)

@@ -13,6 +13,7 @@ except ImportError:
 
 class Configuration(object):
     def __init__(self, config_path):
+        self.config_path = config_path
         self.config = ConfigParser.SafeConfigParser()
         self.config.read(config_path)
 
@@ -20,7 +21,7 @@ class Configuration(object):
         if self.config.has_section(section):
             return dict((k, v) for k, v in self.config.items(section))
         else:
-            raise ValueError("Config at %s has not section %s" % (config_path, section))
+            raise ValueError("Config at %s has not section %s" % (self.config_path, section))
 
 
 class Request(object):
