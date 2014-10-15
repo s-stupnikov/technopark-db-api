@@ -963,8 +963,8 @@ if __name__ == '__main__':
             print passed_str + ' tests passed'
             student['passed'] = passed
             student['last_result'] = passed_str
-            students.save()
             if not options.local:
+                students.save()
                 ans = raw_input('Send email ? [y/N]')
                 if ans == 'y':
                     log_txt = ''
