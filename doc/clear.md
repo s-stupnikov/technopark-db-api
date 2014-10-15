@@ -9,7 +9,7 @@ Truncate all tables.
 
 ##Arguments
 
-Requesting http://some.host.ru/db/api/s.stupnikov/clear/ with **{}**:
+Requesting http://some.host.ru/db/api/clear/ with **{}**:
 ```json
 {"code": 0, "response": "OK"}
 ```
