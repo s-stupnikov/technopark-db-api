@@ -662,7 +662,7 @@ class TestScenario(object):
     def start(self):
         log.write('Clear all')
         try:
-            tools.Request('http://%s/db/api/clear' % self.student_ip, {}, post=True).get_response()
+            tools.Request('http://%s/db/api/clear/' % self.student_ip, {}, post=True).get_response()
             TESTS["clear"] = True
         except Exception, e:
             log.write("/clear call error: %s" % e, level='error')

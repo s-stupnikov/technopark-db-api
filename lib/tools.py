@@ -48,8 +48,8 @@ class Request(object):
             raise ValueError('Empty response')
         if 'response' not in response or 'code' not in response:
             raise ValueError('Bad response body: response or code attribute is missing')
-        # if response['code'] != 0:
-        #     raise ValueError('Bad response code: %s' % str(response['code']))
+        if response['code'] != 0:
+            return response
         if 'response' in response:
             return response['response']
         return response
