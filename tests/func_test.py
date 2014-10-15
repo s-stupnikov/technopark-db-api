@@ -384,13 +384,13 @@ class UserActor(Actor):
     def list_followers(self, query_dict, validate_against):
         url_suffix = 'listFollowers'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
-        api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
+        api_obj_list = [self._create_from_dict(obj_dict) for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
     def list_following(self, query_dict, validate_against):
         url_suffix = 'listFollowing'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
-        api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
+        api_obj_list = [self._create_from_dict(obj_dict) for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
     def follow(self, query_dict, follower, followee):
