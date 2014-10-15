@@ -283,6 +283,7 @@ TEST_THREADS = {
         },
         {
             'since': '2014-01-01 00:00:00',
+            # 'sort': 'tree',
             'order': 'desc',
         },
         {

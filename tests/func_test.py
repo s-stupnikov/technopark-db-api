@@ -533,14 +533,13 @@ class EntitiesList(object):
             self.filter_since_id(kwargs['since_id'])
         if 'related' in kwargs:
             self.include_related(kwargs['related'])
-        if 'order' in kwargs:
-            self.order_by(kwargs['order'])
+
+        if 'sort' in kwargs and kwargs['sort'] != 'flat':
+            self.sort(kwargs['sort'], kwargs.get('order', 'desc'), kwargs.get('limit'))
         else:
-            self.order_by()
-        if 'limit' in kwargs:
-            self.limit(kwargs['limit'])
-        if 'sort' in kwargs:
-            self.sort(kwargs['sort'])
+            self.order_by(kwargs.get('order', 'desc'))
+            if 'limit' in kwargs:
+                self.limit(kwargs['limit'])
 
     def filter_by_attr(self, attr, value):
         objects = self.objects[:]
@@ -594,23 +593,29 @@ class EntitiesList(object):
     def limit(self, limit_by):
         self.objects = self.objects[:limit_by]
 
-    def sort(self, sort,order, limit):
+    def sort(self, sort, order, limit):
         sorted_objects = []
-        if sort == 'flat':
-            return self.order_by()
-        if sort == 'tree':
-            self.order_by()
-            sorted_objects = []
-            posts = dict((post.unique_id, post) for post in self.objects)
-            for post in self.objects:
-                if post.parent is None:
-                    sorted_objects.append(post)
-                else:
-                    parent_post = posts[post.parent]
-                    if not hasattr(parent_post, 'childs'):
-                        parent_post.childs = []
-                    parent_post.childs.append(post.__dict__)
-            self.objects = sorted_objects
+        self.order_by(order)
+        sorted_objects = []
+        posts = dict((post.unique_id, post) for post in self.objects)
+        num_posts = 0
+        for post in self.objects:
+            if post.parent is None:
+                sorted_objects.append(post)
+                num_posts += 1
+                if num_posts == limit and sort == 'sort':
+                    break
+            else:
+                parent_post = posts[post.parent]
+                if not hasattr(parent_post, 'childs'):
+                    parent_post.childs = []
+                parent_post.childs.append(post.__dict__)
+                num_posts += 1
+                if num_posts == limit and sort == 'sort':
+                    break
+        if sort == 'parent_tree':
+            sorted_objects = sorted_objects[:limit]
+        self.objects = sorted_objects
 
 
 class TestScenario(object):
