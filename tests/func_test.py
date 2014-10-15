@@ -133,12 +133,10 @@ class Actor(object):
                     cls = cls_for_location[loc]
         else:
             cls = cls_for_location[new_type]
-
         try:
             obj = cls(**response)
         except Exception, e:
             log.write('Cannot create <%s> object from response. Response: %s' % (cls.__name__, str(response)), level='error')
-            # raise ValueError
             obj = cls()
         return obj
 
@@ -452,7 +450,6 @@ class ForumEntity(object):
         field = sort_field_for_type[cls]
         return getattr(self, field)
 
-
     def __cmp__(self, obj):
         cls_for_attr = {
             'forum': Forum,
@@ -667,10 +664,15 @@ class TestScenario(object):
         except Exception, e:
             log.write("/clear call error: %s" % e, level='error')
             TESTS["clear"] = False
-    
-        for action in (self.register_users, self.create_content, self.test_errors, \
-                       self.test_posts, self.test_threads, self.test_users, self.test_forums):
-            action()
+
+        # run tests    
+        self.register_users()
+        self.create_content()
+        self.test_errors()
+        self.test_posts()
+        self.test_threads()
+        self.test_users()
+        self.test_forums()
 
     def register_users(self):
         log.write('Let there be users.')
