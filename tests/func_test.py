@@ -715,13 +715,27 @@ class TestScenario(object):
         not_found_post = copy.deepcopy(post)
         not_found_post.id = -42
         res = self.post_actor.details(not_found_post, related=[], plain=True)
-        TESTS["errors"] = res.get("code") == 1
+        if res.get("code") == 1:
+            TESTS["errors"] = True
+        else:
+            TESTS["errors"] = False
+            log.write("Get nonexisting post response code was %s instead %s" % (res.get("code"), 1), level='error')
         u = random.choice(self.test_conf['users'])
         res = self.user_actor.create(u, plain=True)
-        TESTS["errors"] = TESTS["errors"] and res.get("code") == 5
+        if res.get("code") == 5:
+            TESTS["errors"] = TESTS["errors"] and True
+        else:
+            TESTS["errors"] = TESTS["errors"] and False
+            log.write("Create existing user response code was %s instead %s" % (res.get("code"), 5), level='error')
+
         thread = random.choice(self.threads.values())
         res = self.thread_actor.details(thread, related=["user", "thread"], plain=True)
-        TESTS["errors"] = TESTS["errors"] and res.get("code") == 3
+        if res.get("code") == 3:
+            TESTS["errors"] = TESTS["errors"] and True
+        else:
+            TESTS["errors"] = TESTS["errors"] and False
+            log.write("Incorrect request response code was %s instead %s" % (res.get("code"), 3), level='error')
+
 
     def test_forums(self):
         # print 'TEST FORUMS'
