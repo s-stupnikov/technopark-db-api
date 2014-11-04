@@ -9,10 +9,10 @@ import datetime
 import subprocess
 import collections
 from optparse import OptionParser
+from multiprocessing.dummy import Pool as ThreadPool
 
 sys.path.append('../lib')
 import tools
-from student_groups import students
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
 settings = tools.Configuration(CONFIG_PATH).get_section('perf_test')
@@ -26,28 +26,6 @@ class TestLog(object):
         msg = time + message
         print message
         # self.test_log.append({'message': message, 'level': level})
-
-
-class HTTPerf(object):
-    def __init__(self):
-        params = tools.Configuration(CONFIG_PATH).get_section('httperf')
-        if DEBUG and 'hog' in params:
-            params['hog'] = "False"
-
-    def make_command(self):
-        cmd = "httperf "
-        for p, v in params.items():
-            if p == "True":
-                cmd += " --%s " % p
-            else:
-                cmd += " --%s=%s " % (p, v)
-        return cmd
-
-    def run(self, ip):
-        params["server"] = ip
-        proc = subprocess.Popen(self.make_command(), stdout = subprocess.PIPE)
-        result = proc.communicate()[0]      
-        print result
 
 
 class Facter(object):
@@ -113,9 +91,9 @@ class APIRequest(object):
         except ValueError, e:
             log.write('Request error: %s' % str(e), level='error')
             self.errors += 1
-            if 'clear' not in url or self.errors > 100:
+            if self.errors > 100:
                 log.write('Exiting: %s API errors' % self.errors, level='error')
-                raise ValueError
+                raise ValueError("Too many errors!")
     
     def request(self, location, query_dict, post=False):
         url = self.url_prefix + location
@@ -123,6 +101,7 @@ class APIRequest(object):
             return tools.Request(url, query_dict, post).url, None
         else:
             return tools.Request(url, query_dict, post).url, json.dumps(query_dict)
+
 
 class ForumEntity(object):
 
@@ -436,24 +415,28 @@ class State(object):
         self.posts.append(p['id'])
 
 
-
 class Filler(object):
     @staticmethod
     def run():
-        from multiprocessing.dummy import Pool as ThreadPool
         t = [
             ('users', User),
             ('forums', Forum),
             ('threads', Thread),
             ('posts', Post),
         ]
-        for entity, factory in t:
+
+        for entity, factory_cls in t:
             entities = [True for i in range(int(settings[entity]))]
-            ready_factory = factory().create
-            pool = ThreadPool(8)
-            pool.imap(ready_factory, entities)
-            pool.close()
-            pool.join()
+            factory = factory_cls().create
+            pool = ThreadPool(int(settings['num_threads']))
+            try:
+                pool.map(factory, entities)
+                pool.close()
+                pool.join()
+            except Exception, e:
+                print e
+                pool.terminate()
+                sys.exit(1)
         
         a = [
             (int(settings['followers']), User().follow),
@@ -509,6 +492,7 @@ class HTTPerfScenario(object):
                 Forum().create,
             ]
         }
+
     def run(self, name_prefix):
         writes_per_ses = int(settings['rps']) * int(settings['write']) / 100
         reads_per_ses = int(settings['rps']) * int(settings['read']) / 100
@@ -534,29 +518,48 @@ class HTTPerfScenario(object):
                     if url.strip() == 'db': continue
                     fh.write(url + '\n')
 
+
+class Students(object):
+    filepath = "students.json"
+    def __init__(self, options):
+        if options.local:
+            self.data = {u'Я': {'slug': 'me', 'ip': options.ip_port, 'email': u's.stupnikov@corp.mail.ru', 'passed': True, 'filled_up': False}}
+        else:            
+            with open(self.filepath) as f:
+                self.data = json.load(f)
+    def save(self):
+        if not options.local:
+            with open(self.filepath, "w") as f:
+                json.dump(self.data, f)
+
+
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-d", "--debug", dest="is_debug_mode", action="store_true", default=False)
-    parser.add_option("-g", "--group", dest="group_num", type="int", default=0)
+    parser.add_option("-l", "--local", dest="local",
+                      action="store_true", default=False, help="run local")
+    parser.add_option("-a", "--address", dest="ip_port",
+                      action="store", type="string", default='127.0.0.1:5000')
     (options, args) = parser.parse_args()
-    DEBUG = options.is_debug_mode
-    GROUP = options.group_num
-    students  = {u'Иван Иванов': {'ip': u'127.0.0.1:5000', 'email': u's.stupnikov@corp.mail.ru', 'group': 1, 'slug': 'ivanov'}} if DEBUG else students
-    # httperf = HTTPerf()
-    for name, info in sorted(students.items(), key=lambda t: t[0]):
+    students = Students(options)
+    for name, student in sorted(students.data.items(), key=lambda t: t[0]):
+        if student['filled_up']:
+            print "%s DB is already filled up" % name
+            continue
+        if not student['passed']:
+            print "%s didnt passed the func test" % name
+            continue
         name_utf = name.encode('utf-8')
-        info['ip'] = info['ip'].encode('utf-8')
-        info['email'] = info['email'].encode('utf-8')
-        if info['group'] == GROUP:
-            log = TestLog()
-            state = State()
-            facter = Facter()
-            api = APIRequest(info['ip'])
-            log.write('\n\t\tTesting started for: %s\n' % info)
-            api.execute('/clear', {}, post=True)
-            s = time.time()
-            Filler.run()
-            print 'FILLER: ' + str(time.time() - s)
-            s = time.time()
-            HTTPerfScenario().run(info['slug'])
-            print 'SCENARIO: ' + str(time.time() - s)
+        student['ip'] = student['ip'].encode('utf-8')
+        student['email'] = student['email'].encode('utf-8')
+        log = TestLog()
+        state = State()
+        facter = Facter()
+        api = APIRequest(student['ip'])
+        log.write('\n\t\tStarted for: %s\n' % student)
+        api.execute('/clear/', {}, post=True)
+        s = time.time()
+        Filler.run()
+        print 'FILLER: ' + str(time.time() - s)
+        s = time.time()
+        HTTPerfScenario().run(student['slug'])
+        print 'SCENARIO: ' + str(time.time() - s)
