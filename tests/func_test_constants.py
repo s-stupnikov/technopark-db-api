@@ -102,7 +102,7 @@ POSTS = [
                 'message': 'my message 1',
                 'isApproved': False,
                 'isSpam': False,
-                'isDeleted': True,
+                'isDeleted': False,
                 'isEdited': False,
                 'isHighlighted': False,
                 'date': '2014-01-03 00:08:01'
@@ -213,7 +213,7 @@ TEST_FORUMS = {
     'listUsers': [
         {
             'forum': 'forumwithsufficientlylargename',
-            'since_id': 10,
+            'since_id': 4,
             'limit': 2,
             'order': 'asc',
         },
