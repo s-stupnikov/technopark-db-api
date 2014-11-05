@@ -374,7 +374,7 @@ TEST_USERS = {
     'listFollowers': [
          {
             "user":"example3@mail.ru",
-            'since_id': 2,
+            'since_id': 0,
             'order': 'desc',
             'limit': 3,
         },
