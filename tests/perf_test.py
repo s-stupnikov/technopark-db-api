@@ -18,15 +18,16 @@ CONFIG_PATH = '/usr/local/etc/test.conf'
 settings = tools.Configuration(CONFIG_PATH).get_section('perf_test')
 
 class TestLog(object):
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.test_log = []
+        self.verbose = verbose
 
     def write(self, message, level='info'):
         time = datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S] ')
         msg = time + message
-        print message
-        # self.test_log.append({'message': message, 'level': level})
-
+        if self.verbose:
+            print message
+        self.test_log.append({'message': message, 'level': level})
 
 class Facter(object):
     abc = u'a b c d e f g h i g k l m n o p q r s t u v w x y z 1 2 3 4 5 6 7 8 9 0'.split()
@@ -98,9 +99,9 @@ class APIRequest(object):
     def request(self, location, query_dict, post=False):
         url = self.url_prefix + location
         if not post:
-            return tools.Request(url, query_dict, post).url, None
+            return tools.Request(url, query_dict, post).prepared_url, None
         else:
-            return tools.Request(url, query_dict, post).url, json.dumps(query_dict)
+            return tools.Request(url, query_dict, post).prepared_url, json.dumps(query_dict)
 
 
 class ForumEntity(object):
@@ -269,7 +270,7 @@ class Post(ForumEntity):
             'date' : facter.date,
         }
         location = '/%s/create/' % self.type
-        params['message'] = ' '.join([facter.message for i in range(100)])
+        params['message'] = ' '.join([facter.message for i in range(30)])
         params['thread'] = random.choice(state.threads)
         params['user'] = random.choice(state.users)
         params['forum'] = state.forum_for_thread[params['thread']]
@@ -537,6 +538,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-l", "--local", dest="local",
                       action="store_true", default=False, help="run local")
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      action="store_true", default=False, help="log to stdout")
     parser.add_option("-a", "--address", dest="ip_port",
                       action="store", type="string", default='127.0.0.1:5000')
     (options, args) = parser.parse_args()
@@ -551,7 +554,7 @@ if __name__ == '__main__':
         name_utf = name.encode('utf-8')
         student['ip'] = student['ip'].encode('utf-8')
         student['email'] = student['email'].encode('utf-8')
-        log = TestLog()
+        log = TestLog(options.verbose)
         state = State()
         facter = Facter()
         api = APIRequest(student['ip'])

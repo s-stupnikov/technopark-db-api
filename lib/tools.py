@@ -26,12 +26,13 @@ class Configuration(object):
 
 class Request(object):
     def __init__(self, url, query_args={}, post=False):
-        self.url = url
         if not isinstance(query_args, dict):
             raise TypeError('Request.query_args must be dict')
         self.headers = {'Content-Type': 'application/json'} if post else {}
         self.method = requests.post if post else requests.get
         self.payload = {"data": json.dumps(query_args)} if post else {"params": query_args}
+        self.url = url
+        self.prepared_url = url if post else requests.Request("GET", url, params=query_args).prepare().url
 
     def get_response(self):
         try:

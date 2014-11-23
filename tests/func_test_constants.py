@@ -213,7 +213,7 @@ TEST_FORUMS = {
     'listUsers': [
         {
             'forum': 'forumwithsufficientlylargename',
-            'since_id': 4,
+            'since_id': 2,
             'limit': 2,
             'order': 'asc',
         },
