@@ -29,6 +29,9 @@ class TestLog(object):
             print message
         self.test_log.append({'message': message, 'level': level})
 
+    def print_out(self, message):
+        print "[%s] %s" % (datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"), message)
+
 class Facter(object):
     abc = u'a b c d e f g h i g k l m n o p q r s t u v w x y z 1 2 3 4 5 6 7 8 9 0'.split()
 
@@ -83,17 +86,19 @@ class APIRequest(object):
     def execute(self, location, query_dict, post=False):
         url = self.url_prefix + location
         try:
-            log.write('Requesting %s with %s (POST=%s)' % (url, str(query_dict), post))
+            log.write('Requesting %s with %s (POST=%s)' % (url, query_dict, post))
             start = time.time()
             response = tools.Request(url, query_dict, post).get_response()
             req_time = time.time() - start
             log.write('Request time was: %.4f sec' % req_time)
             return response
         except ValueError, e:
-            log.write('Request error: %s' % str(e), level='error')
+            log.write('Request error for %s with %s: %s' % (url, query_dict, e), level='error')
+            log.print_out('Request error for %s with %s: %s' % (url, query_dict, e))
             self.errors += 1
             if self.errors > 100:
                 log.write('Exiting: %s API errors' % self.errors, level='error')
+                log.print_out('Exiting: %s API errors' % self.errors)
                 raise ValueError("Too many errors!")
     
     def request(self, location, query_dict, post=False):
@@ -245,11 +250,14 @@ class Thread(ForumEntity):
         }
         return super(Thread, self).action(method='vote', add_params=params)
 
-    def subscribe(self):
+    def subscribe(self, make_request=False):
         params = {
             'user': random.choice(state.users),
         }
-        return super(Thread, self).action(method='subscribe', add_params=params)
+        url, args = super(Thread, self).action(method='subscribe', add_params=params)
+        if make_request:
+            return api.execute("/%s/subscribe/" % self.type, json.loads(args), post=True)
+        return url, args
 
     def unsubscribe(self):
         params = {
@@ -349,13 +357,16 @@ class User(ForumEntity):
     def details(self):
         return super(User, self).action(method='details')
 
-    def follow(self):
+    def follow(self, make_request=False):
         params = {
             'follower': random.choice(state.users),
             'followee': random.choice(state.users),
         }
-        return super(User, self).action(method='follow', add_params=params)
-    
+        url, args = super(User, self).action(method='follow', add_params=params)
+        if make_request:
+            return api.execute("/%s/follow/" % self.type, json.loads(args), post=True)
+        return url, args
+
     def unfollow(self):
         params = {
             'follower': random.choice(state.users),
@@ -420,38 +431,31 @@ class Filler(object):
     @staticmethod
     def run():
         t = [
-            ('users', User),
-            ('forums', Forum),
-            ('threads', Thread),
-            ('posts', Post),
+            ('users', User().create),
+            ('forums', Forum().create),
+            ('threads', Thread().create),
+            ('posts', Post().create),
+            ("followers", User().follow),
+            ("subscribptions", Thread().subscribe),
         ]
 
-        for entity, factory_cls in t:
+        for entity, factory in t:
             entities = [True for i in range(int(settings[entity]))]
-            factory = factory_cls().create
+            num_tasks = len(entities)
             pool = ThreadPool(int(settings['num_threads']))
             try:
-                pool.map(factory, entities)
+                progress = range(5, 105, 5)
+                for i, _ in enumerate(pool.imap(factory, entities)):
+                    perc = i * 100 / num_tasks
+                    if perc % 5 == 0 and perc in progress: 
+                        log.print_out('Creating %s: %d%% done' % (entity, perc))
+                        progress.remove(perc)
                 pool.close()
                 pool.join()
             except Exception, e:
                 print e
                 pool.terminate()
                 sys.exit(1)
-        
-        a = [
-            (int(settings['followers']), User().follow),
-            (int(settings['subscribptions']), Thread().subscribe),
-        ]
-        for it, method in a:
-            for i in range(it):
-                    url, args = method()
-                    print "Requesting %s with %s" % (url,  args)
-                    try:
-                        args = json.loads(args)
-                        tools.Request(url, args, post=True).get_response()
-                    except:
-                        pass
 
 
 class HTTPerfScenario(object):
@@ -500,7 +504,9 @@ class HTTPerfScenario(object):
         reads_per_ses += int(settings['rps']) - writes_per_ses + reads_per_ses
         session = ['r' for i in xrange(reads_per_ses)] + ['w' for j in xrange(writes_per_ses)]
         with open(name_prefix + '_httperf_scenario', 'w') as fh:
-            for s in xrange(int(settings['sessions'])):
+            progress = range(5, 105, 5)
+            num_sessions = int(settings['sessions'])
+            for s in xrange(num_sessions):
                 random.shuffle(session)
                 if s != 0:
                     fh.write('\n')
@@ -509,15 +515,20 @@ class HTTPerfScenario(object):
                         loc = random.choice(self.locations['read'])
                     if request_type == 'w':
                         loc = random.choice(self.locations['write'])
-                    url, query_args = loc()
+                    url, json_query_args = loc()
                     if not url.strip(): print loc
                     url = 'db' + url.split('db')[-1]
                     if i != 0:
                         url = '\t' + url
                     if request_type == 'w':
-                        url += " method=POST contents='%s'" % query_args
+                        url += " method=POST contents='%s'" % json_query_args
                     if url.strip() == 'db': continue
                     fh.write(url + '\n')
+                
+                perc = s * 100 / num_sessions
+                if perc % 5 == 0 and perc in progress: 
+                    log.print_out('Writing httperf sessions: %d%% done' % perc)
+                    progress.remove(perc)
 
 
 class Students(object):
@@ -546,10 +557,10 @@ if __name__ == '__main__':
     students = Students(options)
     for name, student in sorted(students.data.items(), key=lambda t: t[0]):
         if student['filled_up']:
-            print "%s DB is already filled up" % name
+            print "%s DB is already filled up" % name.encode("utf-8")
             continue
         if not student['passed']:
-            print "%s didnt passed the func test" % name
+            print "%s didnt passed the func test" % name.encode("utf-8")
             continue
         name_utf = name.encode('utf-8')
         student['ip'] = student['ip'].encode('utf-8')

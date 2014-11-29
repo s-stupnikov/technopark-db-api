@@ -258,6 +258,7 @@ class ThreadActor(Actor):
         thread.isDeleted = True
         for p in thread_posts:
             p.isDeleted = True
+            thread.posts -= 1
         url_suffix = 'remove'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
         is_thread_valid = self.validate_single(thread)
@@ -272,6 +273,7 @@ class ThreadActor(Actor):
         thread.isDeleted = False
         for p in thread_posts:
             p.isDeleted = False
+            thread.posts += 1
         url_suffix = 'restore'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict, post=True)
         is_thread_valid = self.validate_single(thread)
@@ -955,12 +957,16 @@ if __name__ == '__main__':
             except ValueError:
                 passed = False
 
+            num_passed_tests = sum(1 for t in TESTS.values() if t)
+            passed = True if num_passed_tests == len(TESTS) else False
+
             if not passed and not options.verbose:
                 for line in log.test_log:
                     print '%s: %s\n' % (line['level'], line['message'])
             pprint.pprint(TESTS)
-            passed_str = '%d/%d' % (sum(1 for t in TESTS.values() if t), len(TESTS))
+            passed_str = '%d/%d' % (num_passed_tests, len(TESTS))
             print passed_str + ' tests passed'
+            
             student['passed'] = passed
             student['last_result'] = passed_str
             if not options.local:
