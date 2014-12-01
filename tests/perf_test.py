@@ -269,7 +269,6 @@ class Thread(ForumEntity):
 class Post(ForumEntity):
     def create(self, fill=False):
         params = {
-            # 'message' : facter.message,
             'isApproved' : facter.bool,
             'isSpam' : facter.bool,
             'isDeleted' : facter.bool,
@@ -278,7 +277,8 @@ class Post(ForumEntity):
             'date' : facter.date,
         }
         location = '/%s/create/' % self.type
-        params['message'] = ' '.join([facter.message for i in range(30)])
+        # params['message'] = ' '.join([facter.message for i in range(30)])
+        params['message'] = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam a lorem a leo porttitor tincidunt eget et urna. Aenean id lacinia dolor. Sed consequat ipsum at orci porta, sed condimentum dui elementum. Curabitur magna purus, sagittis in convallis ultrices, dignissim pharetra ipsum. In molestie, arcu id convallis blandit, felis metus suscipit justo, ut iaculis metus leo viverra felis. Donec a varius dolor. Cras tempor, nisl in dapibus cursus, risus ligula ultricies nisi, a sagittis justo lorem et odio. Mauris eu scelerisque tellus. Duis luctus enim vel porttitor convallis. Phasellus pretium mi vitae ullamcorper pretium. Vivamus sollicitudin, risus a volutpat condimentum'
         params['thread'] = random.choice(state.threads)
         params['user'] = random.choice(state.users)
         params['forum'] = state.forum_for_thread[params['thread']]
