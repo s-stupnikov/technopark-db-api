@@ -517,7 +517,7 @@ class HTTPerfScenario(object):
                         loc = random.choice(self.locations['write'])
                     url, json_query_args = loc()
                     if not url.strip(): print loc
-                    url = 'db' + url.split('db')[-1]
+                    url = '/db' + url.split('db')[-1]
                     if i != 0:
                         url = '\t' + url
                     if request_type == 'w':
