@@ -717,6 +717,7 @@ class TestScenario(object):
         not_found_post = copy.deepcopy(post)
         not_found_post.id = -42
         res = self.post_actor.details(not_found_post, related=[], plain=True)
+        res = res if isinstance(res, dict) else {"code": 0, "response": res}
         if res.get("code") == 1:
             TESTS["errors"] = True
         else:
@@ -724,6 +725,7 @@ class TestScenario(object):
             log.write("Get nonexisting post response code was %s instead %s" % (res.get("code"), 1), level='error')
         u = random.choice(self.test_conf['users'])
         res = self.user_actor.create(u, plain=True)
+        res = res if isinstance(res, dict) else {"code": 0, "response": res}
         if res.get("code") == 5:
             TESTS["errors"] = TESTS["errors"] and True
         else:
@@ -732,6 +734,7 @@ class TestScenario(object):
 
         thread = random.choice(self.threads.values())
         res = self.thread_actor.details(thread, related=["user", "thread"], plain=True)
+        res = res if isinstance(res, dict) else {"code": 0, "response": res}
         if res.get("code") == 3:
             TESTS["errors"] = TESTS["errors"] and True
         else:
