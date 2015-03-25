@@ -920,10 +920,11 @@ class Students(object):
         else:            
             with open(self.filepath) as f:
                 self.data = json.load(f)
+
     def save(self):
         if not options.local:
-            with open(self.filepath, "w") as f:
-                json.dump(self.data, f)
+            with open(self.filepath, "w") as fp:
+                fp.write(json.dumps(self.data, sort_keys=True, indent=4, ensure_ascii=False).encode("utf-8"))
 
 
 if __name__ == '__main__':
