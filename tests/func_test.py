@@ -930,6 +930,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-l", "--local", dest="local",
                       action="store_true", default=False, help="run locally")
+    parser.add_option("-f", "--force", dest="force",
+                      action="store_true", default=False, help="force tests even if passed")
     parser.add_option("-v", "--verbose", dest="verbose",
                       action="store_true", default=False, help="log to stdout")
     parser.add_option("-a", "--address", dest="ip_port",
@@ -938,7 +940,7 @@ if __name__ == '__main__':
     ip, port = options.ip_port.split(":")
     students = Students(options)
     for name, student in sorted(students.data.items(), key=lambda t: t[0]):
-        if student['passed']:
+        if student['passed'] and not options.force:
             print "%s already passed the test" % name
             continue
         if not options.local and ip != "127.0.0.1":
