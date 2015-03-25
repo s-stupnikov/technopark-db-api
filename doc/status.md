@@ -1,4 +1,4 @@
-#Clear
+#Status
 Show status info: maps table name to number of rows in that table
 
 ## Supported request methods 
