@@ -63,6 +63,7 @@ technopark-db-api
 
 ##Общие
 * [clear](./doc/clear.md)
+* [status](./doc/status.md)
 
 ##Forum
 * [create](./doc/forum/create.md)
