@@ -935,6 +935,8 @@ if __name__ == '__main__':
                       action="store_true", default=False, help="force tests even if passed")
     parser.add_option("-v", "--verbose", dest="verbose",
                       action="store_true", default=False, help="log to stdout")
+    parser.add_option("-y", "--yes", dest="yes",
+                      action="store_true", default=False, help="answer yes")
     parser.add_option("-a", "--address", dest="ip_port",
                       action="store", type="string", default='127.0.0.1:5000')
     (options, args) = parser.parse_args()
@@ -953,7 +955,7 @@ if __name__ == '__main__':
         student['ip'] = student['ip'].encode('utf-8')
         student['email'] = student['email'].encode('utf-8')
         if not options.local:
-            ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, student['ip'], student['email']))
+            ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, student['ip'], student['email'])) if not options.yes else "y"
         else:
             print 'Testing %s' % student['ip']
             ans = 'y'
