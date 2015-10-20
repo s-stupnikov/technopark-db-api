@@ -27,7 +27,7 @@ THREADS = [
                 'date': '2014-01-01 00:00:01',
                 'message': 'hey hey hey hey!',
                 'isClosed': True,
-                'isDeleted': True,
+                'isDeleted': False,
 
             },
             { 

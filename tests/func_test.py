@@ -941,12 +941,14 @@ if __name__ == '__main__':
     ip, port = options.ip_port.split(":")
     students = Students(options)
     for name, student in sorted(students.data.items(), key=lambda t: t[0]):
-        if student['passed'] and not options.force:
+        if student.get('passed') and not options.force:
             print "%s already passed the test" % name
             continue
         if not options.local and ip != "127.0.0.1":
             if student["ip"] not in (ip, options.ip_port):
                 continue
+            else:
+                student["ip"] = options.ip_port
         name_utf = name.encode('utf-8')
         student['ip'] = student['ip'].encode('utf-8')
         student['email'] = student['email'].encode('utf-8')
