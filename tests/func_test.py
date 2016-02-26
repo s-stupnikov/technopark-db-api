@@ -20,7 +20,8 @@ import tools
 from doc_conf import DISCR
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
-settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
+#TODO:
+#settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
 
 class TestLog(object):
     def __init__(self, verbose=False):
@@ -588,33 +589,40 @@ class EntitiesList(object):
                 get_datetime = lambda obj: datetime.datetime.strptime(obj.date, '%Y-%m-%d %H:%M:%S')
                 self.objects.sort(key=get_datetime, reverse=order)
             else:
-                self.objects.sort(key=lambda obj: obj.sort_field, reverse=order)
+                self.objects.sort(key=lambda obj: obj.get('sort_field') or obj.get('date'), reverse=order)
 
     def limit(self, limit_by):
         self.objects = self.objects[:limit_by]
 
     def sort(self, sort, order, limit):
+        def _flatten_tree(tree, arr): #TODO: beware circling
+            for node in tree:
+                arr.append(node)
+                if hasattr(node, 'childs'):
+                    _flatten_tree(node.childs.values(), arr)
+            return arr
         sorted_objects = []
         self.order_by(order)
-        sorted_objects = []
-        posts = dict((post.unique_id, post) for post in self.objects)
+        posts = dict((post.unique_id, post) for post in self.objects) #TODO: was unique_id as attr
         num_posts = 0
         for post in self.objects:
             if post.parent is None:
                 sorted_objects.append(post)
-                num_posts += 1
-                if num_posts == limit and sort == 'sort':
-                    break
+                #num_posts += 1
+                #if num_posts == limit and sort == 'tree':
+                #    break
             else:
                 parent_post = posts[post.parent]
                 if not hasattr(parent_post, 'childs'):
-                    parent_post.childs = []
-                parent_post.childs.append(post.__dict__)
-                num_posts += 1
-                if num_posts == limit and sort == 'sort':
-                    break
+                    parent_post.childs = {}
+                parent_post.childs[post.id] = post
+                #num_posts += 1
+                #if num_posts == limit and sort == 'tree':
+                #    break
         if sort == 'parent_tree':
-            sorted_objects = sorted_objects[:limit]
+            sorted_objects = _flatten_tree(sorted_objects[:limit], [])
+        elif sort == 'tree':
+            sorted_objects = _flatten_tree(sorted_objects, [])[:limit]
         self.objects = sorted_objects
 
 
@@ -644,19 +652,21 @@ class TestScenario(object):
     def get_obj(obj_id, obj_type):
         container = TestScenario.container_for_type[obj_type]
         return container[obj_id]
-
-    def __init__(self, student_ip):
-        self.student_ip = student_ip
-        TestScenario.forums.clear()
-        TestScenario.posts.clear()
-        TestScenario.threads.clear()
-        TestScenario.users.clear()          
-
-        self.forum_actor = ForumActor(student_ip)
-        self.post_actor = PostActor(student_ip)
-        self.thread_actor = ThreadActor(student_ip)
-        self.user_actor = UserActor(student_ip)
-        self.test_conf = constants.TEST_CONF
+    def __init__(self, threads, conf):
+        self.test_conf = conf
+        self.threads = threads
+#    def __init__(self, student_ip):
+#        self.student_ip = student_ip
+#        TestScenario.forums.clear()
+#        TestScenario.posts.clear()
+#        TestScenario.threads.clear()
+#        TestScenario.users.clear()          
+#
+#        self.forum_actor = ForumActor(student_ip)
+#        self.post_actor = PostActor(student_ip)
+#        self.thread_actor = ThreadActor(student_ip)
+#        self.user_actor = UserActor(student_ip)
+#        self.test_conf = constants.TEST_CONF
 
     def start(self):
         log.write('Clear all')
@@ -692,10 +702,63 @@ class TestScenario(object):
             t['user'] = random.choice(self.users.keys())
             thread = self.thread_actor.create(t)
 
-        self._setup_posts_tree(self.test_conf['posts'])
+        self._create_posts()
 
+    def _create_posts(self, debug_post_list=None):
+        def generate_random_string(index):
+            return 'my message {}'.format(index) * random.randint(self.test_conf['min_post_content_length'], self.test_conf['max_post_content_length'])
+            
+        def generate_random_boolean():
+            return random.random() > 0.5
+
+        def generate_random_date(first_date):
+            def date_to_timestamp(d) :
+                return int(time.mktime(d.timetuple()))
+
+            def randomDate(start, end):
+                """Get a random date between two dates"""
+                stime = date_to_timestamp(start)
+                etime = date_to_timestamp(end)
+                ptime = stime + 1 + random.random() * (etime - stime - 1)
+                new_date = datetime.datetime.fromtimestamp(ptime)
+                return new_date, new_date.strftime("%Y-%m-%d %H:%M:%S")
+            return randomDate(first_date, datetime.datetime.now())
+
+        def generate_random_parent_id_and_tid(posts, treads):
+            is_child = random.random() > self.test_conf['single_posts_rate']
+            if (is_child and self.posts.keys()):
+                parent = posts[random.choice(self.posts.keys())] 
+                return parent.id, parent.thread
+            else:
+                return None, random.choice(self.threads.keys())
+
+        posts_number = random.randint(self.test_conf['min_posts_number'], self.test_conf['max_posts_number'])
+        first_date = datetime.datetime(2014, 1, 1, 0, 0,0)
+        for index in xrange(posts_number):
+            first_date, date = generate_random_date(first_date)
+            parent, thread = generate_random_parent_id_and_tid(self.posts, self.threads)
+            post = {
+                'message': generate_random_string(index),
+                'isApproved': generate_random_boolean(),
+                'isSpam': generate_random_boolean(),
+                'isDeleted': generate_random_boolean(),
+                'isEdited': generate_random_boolean(),
+                'isHighlighted': generate_random_boolean(),
+                'date': date,
+                'parent': parent,
+                'thread': thread
+            }
+            if (debug_post_list is not None):
+                post['id'] = len(debug_post_list)
+                post = Post(**post)
+                self.posts[len(debug_post_list)] = post
+                debug_post_list.append(post)
+            else:
+                pass
+                #self.post_actor.create(p)
+           
     # DFS tree construction
-    def _setup_posts_tree(self, posts, parent=None, thread_id=None):
+    def _setup_posts_tree(self, parent=None, thread_id=None):
         for p in posts:
             childs = []
             if 'childs' in p:

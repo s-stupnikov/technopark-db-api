@@ -153,7 +153,13 @@ TEST_CONF = {
     'forums': FORUMS,
     'threads': THREADS,
     'posts': POSTS,
-    'users': USERS
+    'users': USERS,
+
+    'min_post_content_length': 10,
+    'max_post_content_length': 20,
+    'min_posts_number': 7,
+    'max_posts_number': 10,
+    'single_posts_rate': 0.5
 }
 
 TEST_FORUMS = {
@@ -283,12 +289,15 @@ TEST_THREADS = {
         },
         {
             'since': '2014-01-01 00:00:00',
-            # 'sort': 'tree',
+            'sort' : 'tree',
             'order': 'desc',
+            'limit': 3
         },
         {
             'since': '2014-01-01 00:00:00',
-            'order': 'desc',
+            'sort' : 'parent_tree',
+            'limit': 2,
+            'order' : 'asc'
         },
         {
             'since': '2014-01-03 00:00:00',
@@ -384,3 +393,4 @@ TEST_USERS = {
         },   
     ]
 }
+
