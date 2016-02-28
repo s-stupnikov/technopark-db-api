@@ -20,8 +20,7 @@ import tools
 from doc_conf import DISCR
 
 CONFIG_PATH = '/usr/local/etc/test.conf'
-#TODO:
-#settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
+settings = tools.Configuration(CONFIG_PATH).get_section('func_test')
 
 class TestLog(object):
     def __init__(self, verbose=False):
@@ -203,6 +202,7 @@ class Actor(object):
                 try:
                     if test_obj != api_obj:
                         TESTS[location] = False
+                        log.write('obj {} != obj {}'.format(test_obj, api_obj))
                 except Exception, e:
                     log.write('Validation error: %s' % e, level='error')
                     TESTS[location] = False
@@ -237,7 +237,7 @@ class ThreadActor(Actor):
         api_obj_list = [self._create_from_dict(obj_dict) for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
-    def list_posts(self, query_dict, validate_against):
+    def list_posts(self, query_dict, validate_against): 
         url_suffix = 'listPosts'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
         api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
@@ -589,7 +589,7 @@ class EntitiesList(object):
                 get_datetime = lambda obj: datetime.datetime.strptime(obj.date, '%Y-%m-%d %H:%M:%S')
                 self.objects.sort(key=get_datetime, reverse=order)
             else:
-                self.objects.sort(key=lambda obj: obj.get('sort_field') or obj.get('date'), reverse=order)
+                self.objects.sort(key=lambda obj: obj.sort_field, reverse=order)
 
     def limit(self, limit_by):
         self.objects = self.objects[:limit_by]
@@ -600,10 +600,11 @@ class EntitiesList(object):
                 arr.append(node)
                 if hasattr(node, 'childs'):
                     _flatten_tree(node.childs.values(), arr)
+                    del node.childs
             return arr
         sorted_objects = []
         self.order_by(order)
-        posts = dict((post.unique_id, post) for post in self.objects) #TODO: was unique_id as attr
+        posts = dict((post.unique_id, post) for post in self.objects)
         num_posts = 0
         for post in self.objects:
             if post.parent is None:
@@ -652,21 +653,19 @@ class TestScenario(object):
     def get_obj(obj_id, obj_type):
         container = TestScenario.container_for_type[obj_type]
         return container[obj_id]
-    def __init__(self, threads, conf):
-        self.test_conf = conf
-        self.threads = threads
-#    def __init__(self, student_ip):
-#        self.student_ip = student_ip
-#        TestScenario.forums.clear()
-#        TestScenario.posts.clear()
-#        TestScenario.threads.clear()
-#        TestScenario.users.clear()          
-#
-#        self.forum_actor = ForumActor(student_ip)
-#        self.post_actor = PostActor(student_ip)
-#        self.thread_actor = ThreadActor(student_ip)
-#        self.user_actor = UserActor(student_ip)
-#        self.test_conf = constants.TEST_CONF
+
+    def __init__(self, student_ip):
+        self.student_ip = student_ip
+        TestScenario.forums.clear()
+        TestScenario.posts.clear()
+        TestScenario.threads.clear()
+        TestScenario.users.clear()          
+
+        self.forum_actor = ForumActor(student_ip)
+        self.post_actor = PostActor(student_ip)
+        self.thread_actor = ThreadActor(student_ip)
+        self.user_actor = UserActor(student_ip)
+        self.test_conf = constants.TEST_CONF
 
     def start(self):
         log.write('Clear all')
@@ -701,10 +700,9 @@ class TestScenario(object):
             t['forum'] = random.choice(self.forums.keys())
             t['user'] = random.choice(self.users.keys())
             thread = self.thread_actor.create(t)
+            self._create_posts(thread.id)
 
-        self._create_posts()
-
-    def _create_posts(self, debug_post_list=None):
+    def _create_posts(self, thread):
         def generate_random_string(index):
             return 'my message {}'.format(index) * random.randint(self.test_conf['min_post_content_length'], self.test_conf['max_post_content_length'])
             
@@ -724,38 +722,36 @@ class TestScenario(object):
                 return new_date, new_date.strftime("%Y-%m-%d %H:%M:%S")
             return randomDate(first_date, datetime.datetime.now())
 
-        def generate_random_parent_id_and_tid(posts, treads):
+        def generate_random_parent_id_and_tid(posts, tread):
             is_child = random.random() > self.test_conf['single_posts_rate']
-            if (is_child and self.posts.keys()):
-                parent = posts[random.choice(self.posts.keys())] 
-                return parent.id, parent.thread
+            post_indexes = [index for index in posts.keys() if posts[index].thread == thread.id]
+            if (is_child and post_indexes):
+                parent = posts[random.choice(post_indexes)] 
+                return parent.id, parent.thread, parent.forum
             else:
-                return None, random.choice(self.threads.keys())
+                return None, thread.id, thread.forum
 
         posts_number = random.randint(self.test_conf['min_posts_number'], self.test_conf['max_posts_number'])
         first_date = datetime.datetime(2014, 1, 1, 0, 0,0)
+        thread = self.threads.get(thread)
         for index in xrange(posts_number):
             first_date, date = generate_random_date(first_date)
-            parent, thread = generate_random_parent_id_and_tid(self.posts, self.threads)
+            parent, thread_id, forum = generate_random_parent_id_and_tid(self.posts, thread)
             post = {
                 'message': generate_random_string(index),
                 'isApproved': generate_random_boolean(),
                 'isSpam': generate_random_boolean(),
-                'isDeleted': generate_random_boolean(),
+                'isDeleted': False,
                 'isEdited': generate_random_boolean(),
                 'isHighlighted': generate_random_boolean(),
                 'date': date,
                 'parent': parent,
-                'thread': thread
+                'thread': thread_id,
+                'forum': forum,
+                'user': random.choice(self.users.keys()),
             }
-            if (debug_post_list is not None):
-                post['id'] = len(debug_post_list)
-                post = Post(**post)
-                self.posts[len(debug_post_list)] = post
-                debug_post_list.append(post)
-            else:
-                pass
-                #self.post_actor.create(p)
+            self.post_actor.create(post)
+
            
     # DFS tree construction
     def _setup_posts_tree(self, parent=None, thread_id=None):
