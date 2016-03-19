@@ -582,7 +582,7 @@ class EntitiesList(object):
                 r_obj = TestScenario.get_obj(obj_type=r, obj_id=r_id)
                 setattr(obj, r, r_obj.__dict__)
 
-    def order_by(self, order='desc', objects):
+    def order_by(self, order='desc', objects=None):
         objects = objects or self.objects
         if objects:
             order = True if order == 'desc' else False
