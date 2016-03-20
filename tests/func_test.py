@@ -582,14 +582,15 @@ class EntitiesList(object):
                 r_obj = TestScenario.get_obj(obj_type=r, obj_id=r_id)
                 setattr(obj, r, r_obj.__dict__)
 
-    def order_by(self, order='desc'):
-        if self.objects:
+    def order_by(self, order='desc', objects=None):
+        objects = objects or self.objects
+        if objects:
             order = True if order == 'desc' else False
-            if hasattr(self.objects[0], 'date'):
+            if hasattr(objects[0], 'date'):
                 get_datetime = lambda obj: datetime.datetime.strptime(obj.date, '%Y-%m-%d %H:%M:%S')
-                self.objects.sort(key=get_datetime, reverse=order)
+                objects.sort(key=get_datetime, reverse=order)
             else:
-                self.objects.sort(key=lambda obj: obj.sort_field, reverse=order)
+                objects.sort(key=lambda obj: obj.sort_field, reverse=order)
 
     def limit(self, limit_by):
         self.objects = self.objects[:limit_by]
@@ -599,7 +600,9 @@ class EntitiesList(object):
             for node in tree:
                 arr.append(node)
                 if hasattr(node, 'childs'):
-                    _flatten_tree(node.childs.values(), arr)
+                    childs = node.childs.values()
+                    self.order_by(order, childs)
+                    _flatten_tree(childs, arr)
                     del node.childs
             return arr
         sorted_objects = []
