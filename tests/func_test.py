@@ -600,29 +600,23 @@ class EntitiesList(object):
             for node in tree:
                 arr.append(node)
                 if hasattr(node, 'childs'):
-                    childs = node.childs.values()
-                    self.order_by(order, childs)
+                    childs = node.childs
                     _flatten_tree(childs, arr)
                     del node.childs
             return arr
         sorted_objects = []
-        self.order_by(order)
+        self.order_by(order="asc")
         posts = dict((post.unique_id, post) for post in self.objects)
         num_posts = 0
         for post in self.objects:
             if post.parent is None:
                 sorted_objects.append(post)
-                #num_posts += 1
-                #if num_posts == limit and sort == 'tree':
-                #    break
             else:
                 parent_post = posts[post.parent]
                 if not hasattr(parent_post, 'childs'):
-                    parent_post.childs = {}
-                parent_post.childs[post.id] = post
-                #num_posts += 1
-                #if num_posts == limit and sort == 'tree':
-                #    break
+                    parent_post.childs = []
+                parent_post.childs.append(post)
+        self.order_by(order, sorted_objects)
         if sort == 'parent_tree':
             sorted_objects = _flatten_tree(sorted_objects[:limit], [])
         elif sort == 'tree':
