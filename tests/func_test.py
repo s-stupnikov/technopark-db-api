@@ -202,6 +202,7 @@ class Actor(object):
                 try:
                     if test_obj != api_obj:
                         TESTS[location] = False
+                        log.write('obj {} != obj {}'.format(test_obj, api_obj))
                 except Exception, e:
                     log.write('Validation error: %s' % e, level='error')
                     TESTS[location] = False
@@ -236,7 +237,7 @@ class ThreadActor(Actor):
         api_obj_list = [self._create_from_dict(obj_dict) for obj_dict in response]
         return self.validate_list(validate_against, api_obj_list)
 
-    def list_posts(self, query_dict, validate_against):
+    def list_posts(self, query_dict, validate_against): 
         url_suffix = 'listPosts'
         response = self.query_api(url_suffix=url_suffix, query_dict=query_dict)
         api_obj_list = [self._create_from_dict(obj_dict, new_type='post') for obj_dict in response]
@@ -581,40 +582,51 @@ class EntitiesList(object):
                 r_obj = TestScenario.get_obj(obj_type=r, obj_id=r_id)
                 setattr(obj, r, r_obj.__dict__)
 
-    def order_by(self, order='desc'):
-        if self.objects:
+    def order_by(self, order='desc', objects=None):
+        objects = objects or self.objects
+        if objects:
             order = True if order == 'desc' else False
-            if hasattr(self.objects[0], 'date'):
+            if hasattr(objects[0], 'date'):
                 get_datetime = lambda obj: datetime.datetime.strptime(obj.date, '%Y-%m-%d %H:%M:%S')
-                self.objects.sort(key=get_datetime, reverse=order)
+                objects.sort(key=get_datetime, reverse=order)
             else:
-                self.objects.sort(key=lambda obj: obj.sort_field, reverse=order)
+                objects.sort(key=lambda obj: obj.sort_field, reverse=order)
 
     def limit(self, limit_by):
         self.objects = self.objects[:limit_by]
 
     def sort(self, sort, order, limit):
+        def _flatten_tree(tree, arr): #TODO: beware circling
+            for node in tree:
+                arr.append(node)
+                if hasattr(node, 'childs'):
+                    childs = node.childs.values()
+                    self.order_by(order, childs)
+                    _flatten_tree(childs, arr)
+                    del node.childs
+            return arr
         sorted_objects = []
         self.order_by(order)
-        sorted_objects = []
         posts = dict((post.unique_id, post) for post in self.objects)
         num_posts = 0
         for post in self.objects:
             if post.parent is None:
                 sorted_objects.append(post)
-                num_posts += 1
-                if num_posts == limit and sort == 'sort':
-                    break
+                #num_posts += 1
+                #if num_posts == limit and sort == 'tree':
+                #    break
             else:
                 parent_post = posts[post.parent]
                 if not hasattr(parent_post, 'childs'):
-                    parent_post.childs = []
-                parent_post.childs.append(post.__dict__)
-                num_posts += 1
-                if num_posts == limit and sort == 'sort':
-                    break
+                    parent_post.childs = {}
+                parent_post.childs[post.id] = post
+                #num_posts += 1
+                #if num_posts == limit and sort == 'tree':
+                #    break
         if sort == 'parent_tree':
-            sorted_objects = sorted_objects[:limit]
+            sorted_objects = _flatten_tree(sorted_objects[:limit], [])
+        elif sort == 'tree':
+            sorted_objects = _flatten_tree(sorted_objects, [])[:limit]
         self.objects = sorted_objects
 
 
@@ -691,11 +703,61 @@ class TestScenario(object):
             t['forum'] = random.choice(self.forums.keys())
             t['user'] = random.choice(self.users.keys())
             thread = self.thread_actor.create(t)
+            self._create_posts(thread.id)
 
-        self._setup_posts_tree(self.test_conf['posts'])
+    def _create_posts(self, thread):
+        def generate_random_string(index):
+            return 'my message {}'.format(index) * random.randint(self.test_conf['min_post_content_length'], self.test_conf['max_post_content_length'])
+            
+        def generate_random_boolean():
+            return random.random() > 0.5
 
+        def generate_random_date(first_date):
+            def date_to_timestamp(d) :
+                return int(time.mktime(d.timetuple()))
+
+            def randomDate(start, end):
+                """Get a random date between two dates"""
+                stime = date_to_timestamp(start)
+                etime = date_to_timestamp(end)
+                ptime = stime + 1 + random.random() * (etime - stime - 1)
+                new_date = datetime.datetime.fromtimestamp(ptime)
+                return new_date, new_date.strftime("%Y-%m-%d %H:%M:%S")
+            return randomDate(first_date, datetime.datetime.now())
+
+        def generate_random_parent_id_and_tid(posts, tread):
+            is_child = random.random() > self.test_conf['single_posts_rate']
+            post_indexes = [index for index in posts.keys() if posts[index].thread == thread.id]
+            if (is_child and post_indexes):
+                parent = posts[random.choice(post_indexes)] 
+                return parent.id, parent.thread, parent.forum
+            else:
+                return None, thread.id, thread.forum
+
+        posts_number = random.randint(self.test_conf['min_posts_number'], self.test_conf['max_posts_number'])
+        first_date = datetime.datetime(2014, 1, 1, 0, 0,0)
+        thread = self.threads.get(thread)
+        for index in xrange(posts_number):
+            first_date, date = generate_random_date(first_date)
+            parent, thread_id, forum = generate_random_parent_id_and_tid(self.posts, thread)
+            post = {
+                'message': generate_random_string(index),
+                'isApproved': generate_random_boolean(),
+                'isSpam': generate_random_boolean(),
+                'isDeleted': False,
+                'isEdited': generate_random_boolean(),
+                'isHighlighted': generate_random_boolean(),
+                'date': date,
+                'parent': parent,
+                'thread': thread_id,
+                'forum': forum,
+                'user': random.choice(self.users.keys()),
+            }
+            self.post_actor.create(post)
+
+           
     # DFS tree construction
-    def _setup_posts_tree(self, posts, parent=None, thread_id=None):
+    def _setup_posts_tree(self, parent=None, thread_id=None):
         for p in posts:
             childs = []
             if 'childs' in p:
