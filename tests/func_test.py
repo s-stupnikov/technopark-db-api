@@ -974,83 +974,29 @@ def produce_docs(with_toc=False):
                 readme.write('\n')
 
 
-class Students(object):
-    filepath = "students.json"
-    def __init__(self, options):
-        if options.local:
-            self.data = {u'Я': {'ip': options.ip_port, 'email': u's.stupnikov@corp.mail.ru', 'passed': False, 'last_result': '0/28'}}
-        else:            
-            with open(self.filepath) as f:
-                self.data = json.load(f)
-
-    def save(self):
-        if not options.local:
-            with open(self.filepath, "w") as fp:
-                fp.write(json.dumps(self.data, sort_keys=True, indent=4, ensure_ascii=False).encode("utf-8"))
-
-
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-l", "--local", dest="local",
-                      action="store_true", default=False, help="run locally")
-    parser.add_option("-f", "--force", dest="force",
-                      action="store_true", default=False, help="force tests even if passed")
     parser.add_option("-v", "--verbose", dest="verbose",
                       action="store_true", default=False, help="log to stdout")
-    parser.add_option("-y", "--yes", dest="yes",
-                      action="store_true", default=False, help="answer yes")
     parser.add_option("-a", "--address", dest="ip_port",
                       action="store", type="string", default='127.0.0.1:5000')
     (options, args) = parser.parse_args()
-    ip, port = options.ip_port.split(":")
-    students = Students(options)
-    for name, student in sorted(students.data.items(), key=lambda t: t[0]):
-        if student.get('passed') and not options.force:
-            print "%s already passed the test" % name
-            continue
-        if not options.local and ip != "127.0.0.1":
-            if student["ip"] not in (ip, options.ip_port):
-                continue
-            else:
-                student["ip"] = options.ip_port
-        name_utf = name.encode('utf-8')
-        student['ip'] = student['ip'].encode('utf-8')
-        student['email'] = student['email'].encode('utf-8')
-        if not options.local:
-            ans = raw_input('Test this student (%s, %s, %s)? [y/N]' % (name_utf, student['ip'], student['email'])) if not options.yes else "y"
-        else:
-            print 'Testing %s' % student['ip']
-            ans = 'y'
-        if ans == 'y':
-            TESTS = {}
-            log = TestLog(options.verbose)
-            start = datetime.datetime.now()
-            log.write('Testing started for: %s' % student['ip'])
-            passed = True
-            try:
-                testsuite = TestScenario(student_ip=student['ip'])
-                testsuite.start()
-            except ValueError:
-                passed = False
+    TESTS = {}
+    log = TestLog(options.verbose)
+    log.write('Testing started for: %s' % options.ip_port)
+    passed = True
+    try:
+        testsuite = TestScenario(student_ip=options.ip_port)
+        testsuite.start()
+    except ValueError:
+        passed = False
 
-            num_passed_tests = sum(1 for t in TESTS.values() if t)
-            passed = True if num_passed_tests == len(TESTS) else False
+    num_passed_tests = sum(1 for t in TESTS.values() if t)
+    passed = True if num_passed_tests == len(TESTS) else False
 
-            if not passed and not options.verbose:
-                for line in log.test_log:
-                    print '%s: %s\n' % (line['level'], line['message'])
-            pprint.pprint(TESTS)
-            passed_str = '%d/%d' % (num_passed_tests, len(TESTS))
-            print passed_str + ' tests passed'
-            
-            student['passed'] = passed
-            student['last_result'] = passed_str
-            if not options.local:
-                students.save()
-                ans = raw_input('Send email ? [y/N]')
-                if ans == 'y':
-                    log_txt = ''
-                    for line in log.test_log:
-                        log_txt += '%s: %s\n' % (line['level'], line['message'])
-                    message = 'RESULTS:\n' + passed_str + '\n' + pprint.pformat(TESTS) + '\n\nTEST LOG:\n' + log_txt
-                    tools.sendemail(to_addr_list=(student['email'],), subject='[TP]DB API: functional test results', message=message)
+    if not passed and not options.verbose:
+        for line in log.test_log:
+            print '%s: %s\n' % (line['level'], line['message'])
+    pprint.pprint(TESTS)
+    passed_str = '%d/%d' % (num_passed_tests, len(TESTS))
+    print passed_str + ' tests passed'

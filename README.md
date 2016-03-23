@@ -55,7 +55,7 @@ technopark-db-api
   У всех вариантов есть asc и desc сортировки.
   Подробнее тут: https://tech-mail.ru/blog/database/2027.html
 10. Как запускать тесты локально?
-  - python func_test.py -l --address=127.0.0.1:5000 .  Другие опции смотри по ключу -h 
+  - python func_test.py --address=127.0.0.1:5000 .  Другие опции смотри по ключу -h 
 11. Как провести нагрузочное тестирование локально?
   - python perf_test.py  -l --address=127.0.0.1:5000 заполнит вашу базу согласно опциям из конфига (см. test.conf) и создаст файлик me_httperf_scenario. Его нужно подавать на вход httperf так: httperf --hog --client=0/1 --server=127.0.0.1 --port=5000 --uri=/ --send-buffer=4096 --recv-buffer=16384  --add-header='Content-Type:application/json\n' --wsesslog=100,0.000,me_httperf_scenario . Запускать на 5 минут, смотреть на Reply rate -> avg 
 
