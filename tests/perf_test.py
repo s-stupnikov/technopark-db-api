@@ -19,7 +19,6 @@ settings = tools.Configuration(CONFIG_PATH).get_section('perf_test')
 
 class TestLog(object):
     def __init__(self, verbose=False):
-        self.test_log = []
         self.verbose = verbose
 
     def write(self, message, level='info'):
@@ -27,7 +26,6 @@ class TestLog(object):
         msg = time + message
         if self.verbose:
             print message
-        self.test_log.append({'message': message, 'level': level})
 
     def print_out(self, message):
         print "[%s] %s" % (datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"), message)
