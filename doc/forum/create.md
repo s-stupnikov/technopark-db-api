@@ -10,7 +10,7 @@ Create new forum
 ##Arguments
 
 
-###Requried
+###Required
 * name
 
    ```str``` forum name
